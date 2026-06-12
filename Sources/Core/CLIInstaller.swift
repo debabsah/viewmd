@@ -44,8 +44,11 @@ enum CLIInstaller {
             return try install(into: URL(fileURLWithPath: path), from: shim)
         }
         // No writable dir: copy to /usr/local/bin with admin privileges.
+        // POSIX-escape single quotes so an apostrophe in the app path can't
+        // silently break the cp and report a false success
+        let safePath = shim.path.replacingOccurrences(of: "'", with: "'\\''")
         let script = "do shell script \"mkdir -p /usr/local/bin && " +
-            "cp '\(shim.path)' /usr/local/bin/viewmd && " +
+            "cp '\(safePath)' /usr/local/bin/viewmd && " +
             "chmod 755 /usr/local/bin/viewmd\" with administrator privileges"
         var errorInfo: NSDictionary?
         NSAppleScript(source: script)?.executeAndReturnError(&errorInfo)
