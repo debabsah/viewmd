@@ -12,7 +12,10 @@ struct BannerView: View {
             banner(icon: "exclamationmark.triangle.fill",
                    text: "Changed on disk") {
                 Button("Reload") { document.reloadFromDisk() }
-                Button("Keep Mine") { try? document.keepMine() }
+                Button("Keep Mine") {
+                    do { try document.keepMine() }
+                    catch { document.banner = .notice("Couldn't save: \(error.localizedDescription)") }
+                }
             }
         case .missing:
             banner(icon: "questionmark.folder.fill",
@@ -48,7 +51,8 @@ struct BannerView: View {
         let panel = NSSavePanel()
         panel.nameFieldStringValue = document.displayName
         if panel.runModal() == .OK, let url = panel.url {
-            try? document.saveAs(url)
+            do { try document.saveAs(url) }
+            catch { document.banner = .notice("Couldn't save: \(error.localizedDescription)") }
         }
     }
 }

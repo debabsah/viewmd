@@ -25,6 +25,9 @@ struct SourceEditorView: NSViewRepresentable {
         // external reload (disk change) → sync buffer into the editor
         if textView.string != document.text && !context.coordinator.isEditing {
             textView.string = document.text
+            // a reload replaced the buffer wholesale — undoing past it would
+            // resurrect stale text the state machine no longer knows about
+            textView.undoManager?.removeAllActions()
             context.coordinator.rehighlight()
         }
     }
