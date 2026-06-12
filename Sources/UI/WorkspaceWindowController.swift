@@ -6,8 +6,10 @@ import Combine
 final class WorkspaceWindowController: NSWindowController {
     let workspace = Workspace()
     let bridge = RenderBridge()
+    let comfortModel = ComfortModel()
     private var cancellables = Set<AnyCancellable>()
     private var lastTabID: UUID?
+    private var appearanceObservation: NSKeyValueObservation?
 
     convenience init() {
         let window = NSWindow(
@@ -21,6 +23,19 @@ final class WorkspaceWindowController: NSWindowController {
         window.contentView = NSHostingView(rootView: WorkspaceRootView(
             workspace: workspace, bridge: bridge,
             openURL: { [weak self] in self?.open(url: $0) }))
+
+        let accessory = NSTitlebarAccessoryViewController()
+        accessory.view = NSHostingView(rootView: TitlebarAccessoryView(
+            model: comfortModel,
+            toggleSidebar: { [weak self] in self?.toggleSidebarAction(nil) }))
+        accessory.layoutAttribute = .trailing
+        window.addTitlebarAccessoryViewController(accessory)
+
+        comfortModel.onChange = { [weak self] in self?.rerenderActive() }
+
+        appearanceObservation = NSApp.observe(\.effectiveAppearance) { [weak self] _, _ in
+            Task { @MainActor in self?.rerenderActive() }
+        }
 
         bridge.onOpenExternal = { NSWorkspace.shared.open($0) }
         bridge.onOpenRelative = { [weak self] href in
@@ -81,6 +96,15 @@ final class WorkspaceWindowController: NSWindowController {
         }
     }
 
+    func rerenderActive() {
+        guard let doc = workspace.activeTab, doc.mode == .rendered else { return }
+        render(doc, scroll: RenderBridge.Scroll(mode: "anchor", top: nil))
+    }
+
+    @objc func zoomInAction(_ sender: Any?) { comfortModel.settings.zoomIn() }
+    @objc func zoomOutAction(_ sender: Any?) { comfortModel.settings.zoomOut() }
+    @objc func zoomResetAction(_ sender: Any?) { comfortModel.settings.resetZoom() }
+
     @objc func toggleSidebarAction(_ sender: Any?) {
         let defaults = UserDefaults.standard
         defaults.set(!defaults.bool(forKey: "showSidebar"), forKey: "showSidebar")
@@ -108,13 +132,21 @@ final class WorkspaceWindowController: NSWindowController {
     }
 
     func render(_ doc: OpenDocument, scroll: RenderBridge.Scroll?) {
-        let dark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        let s = comfortModel.settings
+        let systemDark = NSApp.effectiveAppearance
+            .bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        let appearance = s.appearanceOverride ?? (systemDark ? "dark" : "light")
         bridge.render(RenderBridge.Payload(
             text: doc.text,
-            appearance: dark ? "dark" : "light",
-            codeBlocks: "auto",
-            themeCSS: RenderBridge.bundledThemeCSS("refined"),  // ThemeStore arrives in Task 17
-            comfort: nil,
+            appearance: appearance,
+            codeBlocks: s.codeBlocks,
+            themeCSS: comfortModel.themeStore.theme(id: s.themeID)?.css
+                ?? RenderBridge.bundledThemeCSS("refined"),
+            comfort: RenderBridge.Comfort(
+                fontFamily: s.fontFamily,
+                fontSize: s.fontSize,
+                lineWidth: s.lineWidth,
+                lineSpacing: s.lineSpacing),
             scroll: scroll))
     }
 }

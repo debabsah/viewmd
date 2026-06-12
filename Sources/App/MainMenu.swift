@@ -22,6 +22,11 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
                      action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
                      keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
+        let settings = NSMenuItem(title: "Settings…",
+                                  action: #selector(AppDelegate.showSettingsAction(_:)),
+                                  keyEquivalent: ",")
+        menu.addItem(settings)
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Quit viewmd",
                      action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         item.submenu = menu
@@ -86,6 +91,17 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
         menu.addItem(withTitle: "Toggle Sidebar",
                      action: #selector(WorkspaceWindowController.toggleSidebarAction(_:)),
                      keyEquivalent: "b")
+        menu.addItem(NSMenuItem.separator())
+        let zoomIn = NSMenuItem(title: "Zoom In",
+                                action: #selector(WorkspaceWindowController.zoomInAction(_:)),
+                                keyEquivalent: "+")
+        menu.addItem(zoomIn)
+        menu.addItem(withTitle: "Zoom Out",
+                     action: #selector(WorkspaceWindowController.zoomOutAction(_:)),
+                     keyEquivalent: "-")
+        menu.addItem(withTitle: "Actual Size",
+                     action: #selector(WorkspaceWindowController.zoomResetAction(_:)),
+                     keyEquivalent: "0")
         item.submenu = menu
         return item
     }

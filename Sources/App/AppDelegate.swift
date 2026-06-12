@@ -1,8 +1,10 @@
 import AppKit
+import SwiftUI
 import UniformTypeIdentifiers
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var controllers: [WorkspaceWindowController] = []
+    private var settingsWindow: NSWindow?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         UserDefaults.standard.register(defaults: [SessionStore.restoreEnabledKey: true])
@@ -72,5 +74,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func clearRecentsAction(_ sender: Any?) {
         NSDocumentController.shared.clearRecentDocuments(nil)
+    }
+
+    @objc func showSettingsAction(_ sender: Any?) {
+        if settingsWindow == nil {
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 420, height: 260),
+                styleMask: [.titled, .closable], backing: .buffered, defer: false)
+            window.title = "Settings"
+            window.contentView = NSHostingView(rootView: SettingsView())
+            window.isReleasedWhenClosed = false
+            window.center()
+            settingsWindow = window
+        }
+        settingsWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 }
