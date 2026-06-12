@@ -36,3 +36,14 @@ test('document without frontmatter gets no card', () => {
   const { html } = createPipeline().render('# Hi')
   assert.doesNotMatch(html, /vmd-frontmatter/)
 })
+
+test('date values are displayed, not silently dropped', () => {
+  const html = renderFrontmatterCard('published: 2024-01-15')
+  assert.match(html, /2024/)
+  assert.doesNotMatch(html, /<td><\/td>/)
+})
+
+test('circular YAML aliases do not crash the renderer', () => {
+  const html = renderFrontmatterCard('a: &a\n  b: *a')
+  assert.match(html, /circular/)
+})

@@ -1,13 +1,16 @@
 import yaml from 'js-yaml'
 
+// no ' escape needed: all generated attributes are double-quoted
 const esc = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;')
   .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-function fmt(value) {
-  if (Array.isArray(value)) return value.map(fmt).join(', ')
+function fmt(value, seen = new WeakSet()) {
+  if (Array.isArray(value)) return value.map(v => fmt(v, seen)).join(', ')
   if (value && typeof value === 'object') {
-    return Object.entries(value).map(([k, v]) => `${k}: ${fmt(v)}`).join('; ')
+    if (seen.has(value)) return '[circular]'
+    seen.add(value)
+    return Object.entries(value).map(([k, v]) => `${k}: ${fmt(v, seen)}`).join('; ')
   }
   return String(value)
 }
@@ -15,7 +18,7 @@ function fmt(value) {
 export function renderFrontmatterCard(src) {
   let data
   try {
-    data = yaml.load(src)
+    data = yaml.load(src, { schema: yaml.CORE_SCHEMA })
   } catch {
     data = null
   }
