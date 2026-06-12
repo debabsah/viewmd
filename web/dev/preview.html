@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html data-appearance="light" data-code="light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="katex/katex.min.css">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="themes/refined.css">
+<style id="vmd-theme"></style>
+</head>
+<body>
+<article id="vmd-doc"></article>
+<script src="render.js"></script>
+<script>
+const SAMPLE = [
+  '---', 'title: Preview', 'tags: [demo, viewmd]', '---',
+  '# viewmd preview', '',
+  'Inline `code`, **bold**, a [link](https://example.com), math $e^{i\\pi}+1=0$.',
+  '', '```swift', 'let x = 1 // comment', '```', '',
+  '```mermaid', 'graph TD; A-->B; B-->C', '```', '',
+  '$$\\int_0^1 x\\,dx = \\tfrac12$$', '',
+  '| col | val |', '|---|---|', '| a | 1 |', '',
+  '- [x] tables', '- [ ] everything else', '',
+  '```mermaid', 'this is broken mermaid', '```'
+].join('\n')
+window.viewmd.render({ text: SAMPLE })
+</script>
+</body>
+</html>

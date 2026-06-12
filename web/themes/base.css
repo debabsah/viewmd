@@ -1,0 +1,90 @@
+/* Structure + typography skeleton. All colors come from --vmd-* theme vars. */
+:root {
+  --vmd-font-body: -apple-system, "Inter", sans-serif;
+  --vmd-font-mono: "SF Mono", Menlo, monospace;
+  --vmd-font-size: 15px;
+  --vmd-measure: 760px;
+  --vmd-leading: 1.65;
+}
+* { box-sizing: border-box; }
+html { background: var(--vmd-bg); }
+body { margin: 0; }
+#vmd-doc {
+  max-width: var(--vmd-measure);
+  margin: 0 auto;
+  padding: 40px 48px 80px;
+  font-family: var(--vmd-font-body);
+  font-size: var(--vmd-font-size);
+  line-height: var(--vmd-leading);
+  color: var(--vmd-fg);
+}
+h1, h2, h3, h4, h5, h6 { color: var(--vmd-heading); line-height: 1.3; }
+h1 { font-size: 1.8em; font-weight: 650; letter-spacing: -0.02em; margin: 0.4em 0 0.6em; }
+h2 { font-size: 1.35em; font-weight: 600; letter-spacing: -0.01em; margin: 1.4em 0 0.6em; }
+h3 { font-size: 1.15em; font-weight: 600; margin: 1.2em 0 0.5em; }
+a { color: var(--vmd-link); text-decoration: none; font-weight: 500; }
+a:hover { text-decoration: underline; }
+p, ul, ol { margin: 0 0 0.8em; }
+li { margin: 0.15em 0; }
+li.task-list-item { list-style: none; margin-left: -1.2em; }
+hr { border: none; border-top: 1px solid var(--vmd-border); margin: 1.6em 0; }
+strong { color: var(--vmd-heading); }
+code {
+  background: var(--vmd-inline-code-bg);
+  border: 1px solid var(--vmd-border);
+  color: var(--vmd-inline-code-fg);
+  font-family: var(--vmd-font-mono);
+  font-size: 85%;
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+pre {
+  background: var(--vmd-code-bg);
+  border: 1px solid var(--vmd-code-border);
+  color: var(--vmd-code-fg);
+  border-radius: 10px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-family: var(--vmd-font-mono);
+  font-size: 0.85em;
+  line-height: 1.55;
+}
+pre code { background: none; border: none; padding: 0; font-size: 100%; color: inherit; }
+blockquote {
+  border-left: 3px solid var(--vmd-accent);
+  background: var(--vmd-quote-bg);
+  color: var(--vmd-quote-fg);
+  margin: 0 0 0.8em;
+  padding: 8px 14px;
+  border-radius: 0 8px 8px 0;
+}
+table { border-collapse: collapse; margin: 0 0 1em; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--vmd-border); padding: 6px 12px; text-align: left; }
+th { background: var(--vmd-thead-bg); color: var(--vmd-heading); }
+img { max-width: 100%; }
+.vmd-frontmatter {
+  border: 1px solid var(--vmd-border);
+  border-radius: 8px;
+  background: var(--vmd-quote-bg);
+  font-size: 0.85em;
+  margin: 0 0 1.4em;
+}
+.vmd-frontmatter summary {
+  cursor: pointer; padding: 6px 12px;
+  color: var(--vmd-quote-fg);
+  text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.85em;
+}
+.vmd-frontmatter table { margin: 0; display: table; width: 100%; }
+.vmd-frontmatter th, .vmd-frontmatter td { border: none; border-top: 1px solid var(--vmd-border); }
+.vmd-frontmatter th { background: none; width: 30%; font-weight: 600; }
+.vmd-frontmatter-raw { margin: 0; border: none; border-radius: 0; }
+.vmd-diagram { margin: 0 0 1em; text-align: center; }
+.vmd-block-error { border: 1px solid var(--vmd-error); border-radius: 10px; margin: 0 0 1em; overflow: hidden; }
+.vmd-block-error .vmd-error-note { margin: 0; padding: 6px 12px; color: var(--vmd-error); font-size: 0.85em; }
+.vmd-block-error pre { border: none; border-radius: 0; margin: 0; }
+/* syntax tokens — themes set the --vmd-syn-* palette */
+.hljs-keyword, .hljs-selector-tag, .hljs-literal { color: var(--vmd-syn-kw); }
+.hljs-title, .hljs-name, .hljs-function .hljs-title { color: var(--vmd-syn-fn); }
+.hljs-string, .hljs-attr, .hljs-regexp { color: var(--vmd-syn-str); }
+.hljs-comment, .hljs-quote { color: var(--vmd-syn-cm); font-style: italic; }
+.hljs-number, .hljs-symbol, .hljs-built_in { color: var(--vmd-syn-num); }
