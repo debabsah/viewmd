@@ -10,6 +10,7 @@ final class OpenDocument: ObservableObject, Identifiable {
     @Published var text: String = ""
     @Published var mode: Mode = .rendered
     @Published var banner: Banner = .none
+    @Published var showFindBar = false
     @Published private(set) var stateMachine = DocumentStateMachine()
     @Published private(set) var lossyDecoded = false
     var savedScrollTop: Double = 0          // remembered across tab switches
@@ -109,6 +110,9 @@ final class OpenDocument: ObservableObject, Identifiable {
 
     private func readFromDisk() throws -> String {
         let data = try Data(contentsOf: url)
+        if data.count > 2_000_000, banner == .none {
+            banner = .notice("Large file. Rendering may take a moment.")
+        }
         if let s = String(data: data, encoding: .utf8) {
             lossyDecoded = false
             return s

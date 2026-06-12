@@ -54,6 +54,11 @@ struct ComfortPopoverView: View {
                 Text("Dark").tag("dark")
             }
             .pickerStyle(.segmented)
+            Picker("Appearance", selection: $model.settings.appearanceOverride) {
+                Text("Follow System").tag(String?.none)
+                Text("Light").tag(String?.some("light"))
+                Text("Dark").tag(String?.some("dark"))
+            }
         }
         .formStyle(.grouped)
         .frame(width: 320)

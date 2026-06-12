@@ -105,6 +105,16 @@ final class WorkspaceWindowController: NSWindowController {
     @objc func zoomOutAction(_ sender: Any?) { comfortModel.settings.zoomOut() }
     @objc func zoomResetAction(_ sender: Any?) { comfortModel.settings.resetZoom() }
 
+    @objc func findAction(_ sender: Any?) {
+        guard let doc = workspace.activeTab else { return }
+        if doc.mode == .rendered {
+            doc.showFindBar = true
+        } else if let textView = window?.contentView?.firstSubview(ofType: NSTextView.self) {
+            window?.makeFirstResponder(textView)
+            textView.performTextFinderAction(sender)
+        }
+    }
+
     @objc func toggleSidebarAction(_ sender: Any?) {
         let defaults = UserDefaults.standard
         defaults.set(!defaults.bool(forKey: "showSidebar"), forKey: "showSidebar")
@@ -148,5 +158,15 @@ final class WorkspaceWindowController: NSWindowController {
                 lineWidth: s.lineWidth,
                 lineSpacing: s.lineSpacing),
             scroll: scroll))
+    }
+}
+
+private extension NSView {
+    func firstSubview<T: NSView>(ofType type: T.Type) -> T? {
+        for sub in subviews {
+            if let match = sub as? T { return match }
+            if let nested = sub.firstSubview(ofType: type) { return nested }
+        }
+        return nil
     }
 }

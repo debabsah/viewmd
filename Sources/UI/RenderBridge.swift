@@ -65,6 +65,15 @@ final class RenderBridge: NSObject {
         webView.evaluateJavaScript("window.viewmd.render(\(json))")
     }
 
+    func find(_ term: String, forward: Bool = true) {
+        guard !term.isEmpty else { return }
+        let config = WKFindConfiguration()
+        config.backwards = !forward
+        config.wraps = true
+        config.caseSensitive = false
+        webView.find(term, configuration: config) { _ in }
+    }
+
     func currentScrollTop(_ completion: @escaping (Double) -> Void) {
         webView.evaluateJavaScript("window.viewmd.scrollTop()") { value, _ in
             completion((value as? NSNumber)?.doubleValue ?? 0)

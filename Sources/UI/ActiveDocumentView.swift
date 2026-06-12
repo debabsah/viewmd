@@ -8,6 +8,9 @@ struct ActiveDocumentView: View {
     var body: some View {
         VStack(spacing: 0) {
             BannerView(document: document)
+            if document.showFindBar && document.mode == .rendered {
+                FindBarView(document: document, bridge: bridge)
+            }
             if document.mode == .source {
                 SourceEditorView(document: document)
             } else {

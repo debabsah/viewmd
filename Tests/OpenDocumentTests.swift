@@ -124,4 +124,15 @@ final class OpenDocumentTests: XCTestCase {
         try "# External".write(to: newURL, atomically: true, encoding: .utf8)
         waitUntil { doc.text == "# External" }
     }
+
+    func testLargeFileShowsNotice() throws {
+        let big = String(repeating: "lorem ipsum dolor sit amet\n", count: 80_000) // ~2.1 MB
+        try big.write(to: file, atomically: true, encoding: .utf8)
+        let doc = OpenDocument(url: file, watcherDebounce: 0.05)
+        try doc.open()
+        defer { doc.teardown() }
+        guard case .notice = doc.banner else {
+            return XCTFail("expected large-file notice, got \(doc.banner)")
+        }
+    }
 }

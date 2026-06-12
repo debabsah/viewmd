@@ -78,6 +78,12 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
         menu.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
         menu.addItem(withTitle: "Select All",
                      action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        menu.addItem(NSMenuItem.separator())
+        let find = NSMenuItem(title: "Find…",
+                              action: #selector(WorkspaceWindowController.findAction(_:)),
+                              keyEquivalent: "f")
+        find.tag = Int(NSTextFinder.Action.showFindInterface.rawValue)
+        menu.addItem(find)
         item.submenu = menu
         return item
     }
