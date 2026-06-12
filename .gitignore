@@ -1,2 +1,6 @@
 .superpowers/
 .DS_Store
+web/node_modules/
+web/dist/
+.build/
+viewmd.xcodeproj/
