@@ -103,6 +103,21 @@ extension RenderBridge: WKNavigationDelegate {
         pendingPayload = lastPayload
         loadTemplate()
     }
+
+    func webView(_ webView: WKWebView,
+                 decidePolicyFor navigationAction: WKNavigationAction,
+                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        // pin the render surface to the bundled template: dropped files and
+        // stray links must never navigate the webview away (subresources and
+        // in-page fragments don't hit this; only main-frame navigations do)
+        if let url = navigationAction.request.url,
+           url.isFileURL,
+           url.lastPathComponent == "template.html" {
+            decisionHandler(.allow)
+        } else {
+            decisionHandler(.cancel)
+        }
+    }
 }
 
 /// Breaks the WKUserContentController → handler retain cycle.
