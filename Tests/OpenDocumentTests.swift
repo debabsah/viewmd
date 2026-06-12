@@ -92,4 +92,22 @@ final class OpenDocumentTests: XCTestCase {
         waitUntil { doc.banner == .missing }
         XCTAssertEqual(doc.text, "# One")
     }
+
+    func testConflictKeepMineWritesBufferAndClears() throws {
+        let doc = OpenDocument(url: file, watcherDebounce: 0.05)
+        try doc.open()
+        defer { doc.teardown() }
+        var reloads = 0
+        doc.onDiskReload = { reloads += 1 }
+        doc.text = "# Mine"; doc.noteUserEdit()
+        try "# Theirs".write(to: file, atomically: true, encoding: .utf8)
+        waitUntil { doc.banner == .conflict }
+        try doc.keepMine()
+        XCTAssertEqual(try String(contentsOf: file, encoding: .utf8), "# Mine")
+        XCTAssertEqual(doc.stateMachine.state, .clean)
+        XCTAssertEqual(doc.banner, .none)
+        RunLoop.main.run(until: Date().addingTimeInterval(0.4))
+        XCTAssertEqual(reloads, 0)               // no bounce-back reload
+        XCTAssertEqual(doc.text, "# Mine")
+    }
 }
