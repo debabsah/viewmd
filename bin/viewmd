@@ -1,0 +1,4 @@
+#!/bin/sh
+# viewmd CLI: open files/folders in the viewmd app
+if [ $# -eq 0 ]; then set -- "$PWD"; fi
+exec open -a "viewmd" "$@"

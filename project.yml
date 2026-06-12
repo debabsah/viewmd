@@ -1,0 +1,62 @@
+name: viewmd
+options:
+  bundleIdPrefix: com.debabsah
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGNING_REQUIRED: "NO"
+targets:
+  viewmd:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+    resources:
+      - path: web/dist
+        type: folder
+      - path: bin
+        type: folder
+    info:
+      path: Generated/Info.plist
+      properties:
+        CFBundleDisplayName: viewmd
+        CFBundleName: viewmd
+        NSPrincipalClass: NSApplication
+        LSMinimumSystemVersion: "14.0"
+        NSHumanReadableCopyright: ""
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Markdown Document
+            CFBundleTypeRole: Editor
+            LSHandlerRank: Default
+            LSItemContentTypes:
+              - net.daringfireball.markdown
+          - CFBundleTypeName: Folder
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: None
+            LSItemContentTypes:
+              - public.folder
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: net.daringfireball.markdown
+            UTTypeDescription: Markdown Document
+            UTTypeConformsTo: [public.plain-text]
+            UTTypeTagSpecification:
+              public.filename-extension: [md, markdown, mdown, mkd]
+  viewmdTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: viewmd
+schemes:
+  viewmd:
+    build:
+      targets:
+        viewmd: all
+    test:
+      targets:
+        - viewmdTests
