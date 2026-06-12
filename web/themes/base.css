@@ -7,7 +7,8 @@
   --vmd-leading: 1.65;
 }
 * { box-sizing: border-box; }
-html { background: var(--vmd-bg); }
+html { background: var(--vmd-bg, #ffffff); }
+html[data-appearance="dark"] { background: var(--vmd-bg, #121214); }
 body { margin: 0; }
 #vmd-doc {
   max-width: var(--vmd-measure);

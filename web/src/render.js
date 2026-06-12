@@ -4,8 +4,10 @@ import { computeAnchor, computeScrollTop } from './scroll-anchor.js'
 
 const pipeline = createPipeline()
 let mermaidSeq = 0
+let renderGen = 0
 
 const docEl = () => document.getElementById('vmd-doc')
+// text-node escaping only (& and <) — NOT safe for attribute contexts
 const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
 
 function post(message) {
@@ -50,7 +52,7 @@ function applyAppearance(p) {
   const mode = p.codeBlocks ?? 'auto'                              // "auto" | "light" | "dark"
   root.dataset.code = mode === 'auto' ? root.dataset.appearance : mode
   const c = p.comfort ?? {}
-  const set = (k, v) => v != null && root.style.setProperty(k, v)
+  const set = (k, v) => v == null ? root.style.removeProperty(k) : root.style.setProperty(k, v)
   set('--vmd-font-body', c.fontFamily)
   set('--vmd-font-size', c.fontSize && `${c.fontSize}px`)
   set('--vmd-measure', c.lineWidth && `${c.lineWidth}px`)
@@ -63,6 +65,7 @@ window.viewmd = {
   // scroll: { mode: "absolute", top: N } restores a remembered position (tab switch);
   // omitted → scroll to top (fresh open).
   async render(payload) {
+    const gen = ++renderGen
     const scroller = document.scrollingElement
     const anchor = payload.scroll?.mode === 'anchor'
       ? computeAnchor(collectHeadings(), scroller.scrollTop)
@@ -71,6 +74,7 @@ window.viewmd = {
     const { html } = pipeline.render(payload.text ?? '')
     docEl().innerHTML = html
     await renderMermaidBlocks()
+    if (gen !== renderGen) return   // a newer render superseded this pass
     if (anchor) scroller.scrollTop = computeScrollTop(collectHeadings(), anchor)
     else if (payload.scroll?.mode === 'absolute') scroller.scrollTop = payload.scroll.top
     else scroller.scrollTop = 0
