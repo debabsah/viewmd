@@ -67,7 +67,7 @@ final class FileWatcherTests: XCTestCase {
             usleep(10_000) // 10ms apart, inside the 100ms debounce window
         }
         wait(for: [exp], timeout: 2)
-        Thread.sleep(forTimeInterval: 0.4)   // let any stragglers fire
+        RunLoop.main.run(until: Date().addingTimeInterval(0.4))   // let any stragglers fire
         XCTAssertLessThanOrEqual(count, 2)   // 5 writes collapse to 1–2 events
     }
 
@@ -76,7 +76,17 @@ final class FileWatcherTests: XCTestCase {
         makeWatcher { _ in count += 1 }
         watcher?.suppress(for: 0.5)
         try "our own save".write(to: file, atomically: true, encoding: .utf8)
-        Thread.sleep(forTimeInterval: 0.4)
+        RunLoop.main.run(until: Date().addingTimeInterval(0.4))
+        XCTAssertEqual(count, 0)
+    }
+
+    func testSuppressionCoversReArmLatency() throws {
+        var count = 0
+        makeWatcher { _ in count += 1 }
+        // window deliberately SHORTER than the 50ms re-arm + 100ms debounce chain
+        watcher?.suppress(for: 0.05)
+        try "own atomic save".write(to: file, atomically: true, encoding: .utf8) // rename path
+        RunLoop.main.run(until: Date().addingTimeInterval(0.5))
         XCTAssertEqual(count, 0)
     }
 }

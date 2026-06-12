@@ -64,10 +64,12 @@ final class FileWatcher {
         src.setEventHandler { [weak self] in
             guard let self else { return }
             let flags = src.data
+            // decide suppression when the event ARRIVES, not when the debounce fires
+            let suppressed = Date() < self.suppressedUntil
             if flags.contains(.delete) || flags.contains(.rename) {
                 src.cancel()                  // cancel handler closes fd
-                self.rearmAfterReplace()
-            } else {
+                self.rearmAfterReplace(suppressed: suppressed)
+            } else if !suppressed {
                 self.scheduleEmit(.changed)
             }
         }
@@ -76,14 +78,14 @@ final class FileWatcher {
         source = src
     }
 
-    private func rearmAfterReplace() {
+    private func rearmAfterReplace(suppressed: Bool) {
         // Atomic save = new file renamed over ours. Give the rename a moment,
         // then try to attach to the new inode.
         queue.asyncAfter(deadline: .now() + 0.05) { [weak self] in
             guard let self, !self.stopped else { return }
             if FileManager.default.fileExists(atPath: self.url.path) {
                 self.arm()
-                self.scheduleEmit(.changed)
+                if !suppressed { self.scheduleEmit(.changed) }
             } else {
                 self.emit(.disappeared)
             }
