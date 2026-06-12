@@ -61,6 +61,8 @@ final class WorkspaceWindowController: NSWindowController {
         }
         doc.onDiskReload = { [weak self, weak doc] in
             guard let self, let doc else { return }
+            // background tabs reload their model silently; only the active tab renders
+            guard doc.id == self.workspace.activeTabID else { return }
             self.render(doc, scroll: RenderBridge.Scroll(mode: "anchor", top: nil))
         }
         render(doc, scroll: RenderBridge.Scroll(mode: "absolute", top: doc.savedScrollTop))
