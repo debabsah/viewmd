@@ -29,10 +29,10 @@ export function createPipeline() {
   md.use(frontMatter, (fm) => { state.frontmatter = fm })
   md.use(katex.default?.default ?? katex.default ?? katex, { throwOnError: false, errorColor: '#cc0000' })
 
-  const defaultFence = md.renderer.rules.fence.bind(md.renderer.rules)
+  const defaultFence = md.renderer.rules.fence
   md.renderer.rules.fence = (tokens, idx, options, env, self) => {
     const token = tokens[idx]
-    if (token.info.trim() === 'mermaid') {
+    if (token.info.trim().split(/\s+/)[0].toLowerCase() === 'mermaid') {
       return `<pre class="vmd-mermaid">${md.utils.escapeHtml(token.content)}</pre>\n`
     }
     return defaultFence(tokens, idx, options, env, self)
