@@ -2,6 +2,7 @@ import MarkdownIt from 'markdown-it'
 import taskLists from 'markdown-it-task-lists'
 import frontMatter from 'markdown-it-front-matter'
 import hljs from 'highlight.js/lib/common'
+import katex from '@vscode/markdown-it-katex'
 import { renderFrontmatterCard } from './frontmatter.js'
 
 function highlight(code, lang) {
@@ -26,6 +27,16 @@ export function createPipeline() {
   })
   md.use(taskLists, { enabled: false }) // render checkboxes, keep them inert
   md.use(frontMatter, (fm) => { state.frontmatter = fm })
+  md.use(katex.default?.default ?? katex.default ?? katex, { throwOnError: false, errorColor: '#cc0000' })
+
+  const defaultFence = md.renderer.rules.fence.bind(md.renderer.rules)
+  md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+    const token = tokens[idx]
+    if (token.info.trim() === 'mermaid') {
+      return `<pre class="vmd-mermaid">${md.utils.escapeHtml(token.content)}</pre>\n`
+    }
+    return defaultFence(tokens, idx, options, env, self)
+  }
 
   return {
     render(text) {
