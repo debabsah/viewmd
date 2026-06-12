@@ -15,10 +15,11 @@ targets:
     platform: macOS
     sources:
       - path: Sources
-    resources:
       - path: web/dist
+        buildPhase: resources
         type: folder
       - path: bin
+        buildPhase: resources
         type: folder
     info:
       path: Generated/Info.plist
