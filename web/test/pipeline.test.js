@@ -46,3 +46,16 @@ test('heading and inline code render', () => {
   assert.match(html, /<h1>Title<\/h1>/)
   assert.match(html, /<code>npm test<\/code>/)
 })
+
+test('hostile fence info string cannot break out of the class attribute', () => {
+  const html = render('```js"><img src=x onerror=alert(1)>\nx\n```')
+  assert.doesNotMatch(html, /<img/)
+})
+
+test('pipeline instance does not leak frontmatter across renders', () => {
+  const p = createPipeline()
+  p.render('---\ntitle: First\n---\nbody')
+  const second = p.render('plain body')
+  assert.equal(second.frontmatterSource, null)
+  assert.doesNotMatch(second.html, /vmd-frontmatter/)
+})
