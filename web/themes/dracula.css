@@ -1,0 +1,14 @@
+/* viewmd-theme: Dracula; appearances: dark */
+:root[data-appearance="light"], :root[data-appearance="dark"] {
+  --vmd-bg: #282a36; --vmd-fg: #f8f8f2; --vmd-heading: #ffffff;
+  --vmd-accent: #bd93f9; --vmd-link: #8be9fd;
+  --vmd-border: #44475a; --vmd-thead-bg: #343746;
+  --vmd-quote-bg: #343746; --vmd-quote-fg: #b8bcce;
+  --vmd-inline-code-bg: #343746; --vmd-inline-code-fg: #ff79c6;
+  --vmd-error: #ff5555;
+}
+:root[data-code="light"], :root[data-code="dark"] {
+  --vmd-code-bg: #21222c; --vmd-code-border: #44475a; --vmd-code-fg: #f8f8f2;
+  --vmd-syn-kw: #ff79c6; --vmd-syn-fn: #50fa7b; --vmd-syn-str: #f1fa8c;
+  --vmd-syn-cm: #6272a4; --vmd-syn-num: #bd93f9;
+}

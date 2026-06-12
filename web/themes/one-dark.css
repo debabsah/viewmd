@@ -1,0 +1,14 @@
+/* viewmd-theme: One Dark; appearances: dark */
+:root[data-appearance="light"], :root[data-appearance="dark"] {
+  --vmd-bg: #282c34; --vmd-fg: #abb2bf; --vmd-heading: #e6e6e6;
+  --vmd-accent: #61afef; --vmd-link: #61afef;
+  --vmd-border: #3e4451; --vmd-thead-bg: #21252b;
+  --vmd-quote-bg: #21252b; --vmd-quote-fg: #828997;
+  --vmd-inline-code-bg: #21252b; --vmd-inline-code-fg: #e06c75;
+  --vmd-error: #e06c75;
+}
+:root[data-code="light"], :root[data-code="dark"] {
+  --vmd-code-bg: #21252b; --vmd-code-border: #3e4451; --vmd-code-fg: #abb2bf;
+  --vmd-syn-kw: #c678dd; --vmd-syn-fn: #61afef; --vmd-syn-str: #98c379;
+  --vmd-syn-cm: #5c6370; --vmd-syn-num: #d19a66;
+}

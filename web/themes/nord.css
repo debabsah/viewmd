@@ -1,0 +1,27 @@
+/* viewmd-theme: Nord; appearances: light,dark */
+:root[data-appearance="light"] {
+  --vmd-bg: #eceff4; --vmd-fg: #2e3440; --vmd-heading: #2e3440;
+  --vmd-accent: #5e81ac; --vmd-link: #5e81ac;
+  --vmd-border: #d8dee9; --vmd-thead-bg: #e5e9f0;
+  --vmd-quote-bg: #e5e9f0; --vmd-quote-fg: #4c566a;
+  --vmd-inline-code-bg: #e5e9f0; --vmd-inline-code-fg: #5e81ac;
+  --vmd-error: #bf616a;
+}
+:root[data-appearance="dark"] {
+  --vmd-bg: #2e3440; --vmd-fg: #d8dee9; --vmd-heading: #eceff4;
+  --vmd-accent: #88c0d0; --vmd-link: #88c0d0;
+  --vmd-border: #434c5e; --vmd-thead-bg: #3b4252;
+  --vmd-quote-bg: #3b4252; --vmd-quote-fg: #aebacd;
+  --vmd-inline-code-bg: #3b4252; --vmd-inline-code-fg: #88c0d0;
+  --vmd-error: #bf616a;
+}
+:root[data-code="light"] {
+  --vmd-code-bg: #e5e9f0; --vmd-code-border: #d8dee9; --vmd-code-fg: #2e3440;
+  --vmd-syn-kw: #5e81ac; --vmd-syn-fn: #8fbcbb; --vmd-syn-str: #a3be8c;
+  --vmd-syn-cm: #7b88a1; --vmd-syn-num: #b48ead;
+}
+:root[data-code="dark"] {
+  --vmd-code-bg: #3b4252; --vmd-code-border: #434c5e; --vmd-code-fg: #d8dee9;
+  --vmd-syn-kw: #81a1c1; --vmd-syn-fn: #88c0d0; --vmd-syn-str: #a3be8c;
+  --vmd-syn-cm: #616e88; --vmd-syn-num: #b48ead;
+}
