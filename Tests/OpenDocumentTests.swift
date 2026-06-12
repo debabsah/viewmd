@@ -110,4 +110,18 @@ final class OpenDocumentTests: XCTestCase {
         XCTAssertEqual(reloads, 0)               // no bounce-back reload
         XCTAssertEqual(doc.text, "# Mine")
     }
+
+    func testSaveAsRebindsURLAndWatchesNewFile() throws {
+        let doc = OpenDocument(url: file, watcherDebounce: 0.05)
+        try doc.open()
+        defer { doc.teardown() }
+        let newURL = dir.appendingPathComponent("renamed.md")
+        doc.text = "# Moved"
+        try doc.saveAs(newURL)
+        XCTAssertEqual(doc.url, newURL)
+        XCTAssertEqual(try String(contentsOf: newURL, encoding: .utf8), "# Moved")
+        // watcher must now track the NEW file
+        try "# External".write(to: newURL, atomically: true, encoding: .utf8)
+        waitUntil { doc.text == "# External" }
+    }
 }

@@ -68,8 +68,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                     action: #selector(openFolderAction(_:)), keyEquivalent: "O")
         openFolder.keyEquivalentModifierMask = [.command, .shift]
         fileMenu.addItem(openFolder)
+        fileMenu.addItem(NSMenuItem.separator())
+        fileMenu.addItem(withTitle: "Save",
+                         action: #selector(WorkspaceWindowController.saveDocumentAction(_:)),
+                         keyEquivalent: "s")
+        fileMenu.addItem(withTitle: "Close Tab",
+                         action: #selector(WorkspaceWindowController.closeTabAction(_:)),
+                         keyEquivalent: "w")
         fileItem.submenu = fileMenu
         main.addItem(fileItem)
+
+        let viewItem = NSMenuItem()
+        let viewMenu = NSMenu(title: "View")
+        viewMenu.addItem(withTitle: "Toggle Source",
+                         action: #selector(WorkspaceWindowController.toggleSourceAction(_:)),
+                         keyEquivalent: "e")
+        viewItem.submenu = viewMenu
+        main.addItem(viewItem)
 
         return main
     }

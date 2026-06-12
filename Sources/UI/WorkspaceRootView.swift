@@ -16,8 +16,9 @@ struct WorkspaceRootView: View {
                     TabBarView(workspace: workspace)
                     Divider()
                 }
-                if workspace.activeTab != nil {
-                    RenderView(bridge: bridge)
+                if let tab = workspace.activeTab {
+                    ActiveDocumentView(document: tab, bridge: bridge)
+                        .id(tab.id)
                 } else {
                     EmptyDropHint()
                 }

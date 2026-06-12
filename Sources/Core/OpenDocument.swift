@@ -6,7 +6,7 @@ final class OpenDocument: ObservableObject, Identifiable {
     enum Banner: Equatable { case none, conflict, missing, notice(String) }
 
     nonisolated let id = UUID()
-    let url: URL
+    private(set) var url: URL
     @Published var text: String = ""
     @Published var mode: Mode = .rendered
     @Published var banner: Banner = .none
@@ -64,6 +64,19 @@ final class OpenDocument: ObservableObject, Identifiable {
     /// "Keep mine" on the conflict banner: write the buffer over the disk version.
     func keepMine() throws {
         try save()
+    }
+
+    /// Save the buffer to a new location and rebind watching to it.
+    func saveAs(_ newURL: URL) throws {
+        teardown()
+        url = newURL.standardizedFileURL
+        guard let data = text.data(using: .utf8) else {
+            throw CocoaError(.fileWriteInapplicableStringEncoding)
+        }
+        try data.write(to: url, options: .atomic)
+        dispatch(.saved)
+        banner = .none
+        startWatching()
     }
 
     // MARK: - Private

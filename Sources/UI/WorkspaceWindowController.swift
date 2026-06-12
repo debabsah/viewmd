@@ -69,6 +69,37 @@ final class WorkspaceWindowController: NSWindowController {
         window?.title = doc.displayName
     }
 
+    @objc func toggleSourceAction(_ sender: Any?) {
+        guard let doc = workspace.activeTab else { return }
+        if doc.mode == .rendered {
+            doc.mode = .source
+        } else {
+            doc.mode = .rendered
+            render(doc, scroll: RenderBridge.Scroll(mode: "anchor", top: nil))
+        }
+    }
+
+    @objc func saveDocumentAction(_ sender: Any?) {
+        guard let doc = workspace.activeTab else { return }
+        do {
+            try doc.save()
+            if doc.mode == .rendered {
+                render(doc, scroll: RenderBridge.Scroll(mode: "anchor", top: nil))
+            }
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.runModal()   // spec: alert, never drop the buffer
+        }
+    }
+
+    @objc func closeTabAction(_ sender: Any?) {
+        if let id = workspace.activeTabID {
+            workspace.closeTab(id: id)
+        } else {
+            window?.performClose(sender)
+        }
+    }
+
     func render(_ doc: OpenDocument, scroll: RenderBridge.Scroll?) {
         let dark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         bridge.render(RenderBridge.Payload(
