@@ -4,11 +4,27 @@ import UniformTypeIdentifiers
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var controllers: [WorkspaceWindowController] = []
 
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        UserDefaults.standard.register(defaults: [SessionStore.restoreEnabledKey: true])
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
-        NSApp.mainMenu = makeMinimalMenu()
+        NSApp.mainMenu = MainMenuBuilder.shared.build()
         mainController().showWindow(nil)
+        if UserDefaults.standard.bool(forKey: SessionStore.restoreEnabledKey),
+           let snapshot = SessionStore.load() {
+            SessionStore.apply(snapshot, using: mainController())
+        }
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @MainActor
+    func applicationWillTerminate(_ notification: Notification) {
+        guard UserDefaults.standard.bool(forKey: SessionStore.restoreEnabledKey),
+              let controller = controllers.first else { return }
+        SessionStore.save(SessionStore.capture(controller.workspace))
+        controller.workspace.teardown()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -49,43 +65,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    // Minimal menu; the full menu (with View/source toggle etc.) lands in Task 16.
-    private func makeMinimalMenu() -> NSMenu {
-        let main = NSMenu()
+    @MainActor @objc func openRecentAction(_ sender: NSMenuItem) {
+        guard let url = sender.representedObject as? URL else { return }
+        mainController().open(url: url)
+    }
 
-        let appItem = NSMenuItem()
-        let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "Quit viewmd",
-                        action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        appItem.submenu = appMenu
-        main.addItem(appItem)
-
-        let fileItem = NSMenuItem()
-        let fileMenu = NSMenu(title: "File")
-        fileMenu.addItem(withTitle: "Open…",
-                         action: #selector(openDocumentAction(_:)), keyEquivalent: "o")
-        let openFolder = NSMenuItem(title: "Open Folder…",
-                                    action: #selector(openFolderAction(_:)), keyEquivalent: "O")
-        openFolder.keyEquivalentModifierMask = [.command, .shift]
-        fileMenu.addItem(openFolder)
-        fileMenu.addItem(NSMenuItem.separator())
-        fileMenu.addItem(withTitle: "Save",
-                         action: #selector(WorkspaceWindowController.saveDocumentAction(_:)),
-                         keyEquivalent: "s")
-        fileMenu.addItem(withTitle: "Close Tab",
-                         action: #selector(WorkspaceWindowController.closeTabAction(_:)),
-                         keyEquivalent: "w")
-        fileItem.submenu = fileMenu
-        main.addItem(fileItem)
-
-        let viewItem = NSMenuItem()
-        let viewMenu = NSMenu(title: "View")
-        viewMenu.addItem(withTitle: "Toggle Source",
-                         action: #selector(WorkspaceWindowController.toggleSourceAction(_:)),
-                         keyEquivalent: "e")
-        viewItem.submenu = viewMenu
-        main.addItem(viewItem)
-
-        return main
+    @objc func clearRecentsAction(_ sender: Any?) {
+        NSDocumentController.shared.clearRecentDocuments(nil)
     }
 }

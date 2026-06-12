@@ -18,8 +18,9 @@ final class WorkspaceWindowController: NSWindowController {
         window.center()
         window.setFrameAutosaveName("viewmd.workspace")
         self.init(window: window)
-        window.contentView = NSHostingView(
-            rootView: WorkspaceRootView(workspace: workspace, bridge: bridge))
+        window.contentView = NSHostingView(rootView: WorkspaceRootView(
+            workspace: workspace, bridge: bridge,
+            openURL: { [weak self] in self?.open(url: $0) }))
 
         bridge.onOpenExternal = { NSWorkspace.shared.open($0) }
         bridge.onOpenRelative = { [weak self] href in
@@ -45,6 +46,7 @@ final class WorkspaceWindowController: NSWindowController {
         } else {
             workspace.openFile(url)
         }
+        NSDocumentController.shared.noteNewRecentDocumentURL(url)
         showWindow(nil)
         window?.makeKeyAndOrderFront(nil)
     }
@@ -77,6 +79,11 @@ final class WorkspaceWindowController: NSWindowController {
             doc.mode = .rendered
             render(doc, scroll: RenderBridge.Scroll(mode: "anchor", top: nil))
         }
+    }
+
+    @objc func toggleSidebarAction(_ sender: Any?) {
+        let defaults = UserDefaults.standard
+        defaults.set(!defaults.bool(forKey: "showSidebar"), forKey: "showSidebar")
     }
 
     @objc func saveDocumentAction(_ sender: Any?) {

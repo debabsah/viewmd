@@ -3,6 +3,7 @@ import SwiftUI
 struct WorkspaceRootView: View {
     @ObservedObject var workspace: Workspace
     let bridge: RenderBridge
+    let openURL: (URL) -> Void
     @AppStorage("showSidebar") private var showSidebar = true
 
     var body: some View {
@@ -26,6 +27,11 @@ struct WorkspaceRootView: View {
             .frame(minWidth: 400)
         }
         .frame(minWidth: 480, minHeight: 320)
+        .dropDestination(for: URL.self) { urls, _ in
+            guard !urls.isEmpty else { return false }
+            urls.forEach(openURL)
+            return true
+        }
     }
 }
 
