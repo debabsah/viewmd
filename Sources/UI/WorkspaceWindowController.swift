@@ -90,6 +90,7 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
         FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
         if isDir.boolValue {
             workspace.openFolder(url)
+            ui.sidebarTab = .files            // browsing a folder: file tree is the nav
             withAnimation(.easeOut(duration: 0.26)) { ui.sidebarVisible = true }
         } else {
             workspace.openFile(url)
@@ -98,6 +99,7 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
                 // but keep the focus on the document (spec: first-run flow)
                 workspace.openFolder(url.deletingLastPathComponent())
                 ui.sidebarVisible = false
+                ui.sidebarTab = .outline      // reading a single doc: outline is the nav
             }
         }
         NSDocumentController.shared.noteNewRecentDocumentURL(url)
