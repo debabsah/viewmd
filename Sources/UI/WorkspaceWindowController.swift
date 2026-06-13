@@ -26,12 +26,18 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
 
         recomputePalette()
 
-        window.contentView = NSHostingView(rootView: WorkspaceRootView(
+        let hostingView = NSHostingView(rootView: WorkspaceRootView(
             controller: self, workspace: workspace, ui: ui, bridge: bridge,
             openURL: { [weak self] in self?.open(url: $0) },
             openFilePanel: {
                 (NSApp.delegate as? AppDelegate)?.openDocumentAction(nil)
             }))
+        // Fill the full window including under the titlebar so the tab strip
+        // sits on the traffic-light row (its 78pt spacer clears the lights).
+        // Without this, SwiftUI insets content below the titlebar safe area
+        // and the tabs drop onto a second row.
+        hostingView.safeAreaRegions = []
+        window.contentView = hostingView
 
         comfortModel.onChange = { [weak self] in
             self?.recomputePalette()
