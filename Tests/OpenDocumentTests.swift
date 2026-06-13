@@ -135,4 +135,52 @@ final class OpenDocumentTests: XCTestCase {
             return XCTFail("expected large-file notice, got \(doc.banner)")
         }
     }
+
+    func testIsWatchingLifecycle() throws {
+        let doc = OpenDocument(url: file, watcherDebounce: 0.05)
+        XCTAssertFalse(doc.isWatching)
+        try doc.open()
+        XCTAssertTrue(doc.isWatching)
+        doc.teardown()
+        XCTAssertFalse(doc.isWatching)
+    }
+
+    func testMissingFileClearsIsWatching() throws {
+        let doc = OpenDocument(url: file, watcherDebounce: 0.05)
+        try doc.open()
+        defer { doc.teardown() }
+        try FileManager.default.removeItem(at: file)
+        waitUntil { doc.banner == .missing }
+        XCTAssertFalse(doc.isWatching)
+    }
+
+    func testSaveAfterMissingRearmsWatcherAndWatches() throws {
+        let doc = OpenDocument(url: file, watcherDebounce: 0.05)
+        try doc.open()
+        defer { doc.teardown() }
+        try FileManager.default.removeItem(at: file)
+        waitUntil { doc.banner == .missing }
+        XCTAssertFalse(doc.isWatching)        // dead watcher released, state honest
+        doc.text = "# restored"
+        try doc.save()                         // re-arms a fresh watcher on the new file
+        XCTAssertTrue(doc.isWatching)
+        // the fresh watcher is live: after save's own-write suppression window
+        // expires, an external change still reloads
+        RunLoop.main.run(until: Date().addingTimeInterval(0.4))
+        try "# external".write(to: file, atomically: true, encoding: .utf8)
+        waitUntil { doc.text == "# external" }
+    }
+
+    func testLargeFileThresholdIsConfigurable() throws {
+        let defaults = UserDefaults(suiteName: "vmd-threshold-\(UUID().uuidString)")!
+        defaults.set(0.0001, forKey: OpenDocument.largeFileThresholdKey)  // ~100 bytes
+        try String(repeating: "x", count: 500)
+            .write(to: file, atomically: true, encoding: .utf8)
+        let doc = OpenDocument(url: file, watcherDebounce: 0.05, settingsDefaults: defaults)
+        try doc.open()
+        defer { doc.teardown() }
+        guard case .notice = doc.banner else {
+            return XCTFail("expected large-file notice with tiny threshold")
+        }
+    }
 }

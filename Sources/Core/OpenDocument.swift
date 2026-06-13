@@ -6,6 +6,7 @@ final class OpenDocument: ObservableObject, Identifiable {
     enum Banner: Equatable { case none, conflict, missing, notice(String) }
 
     nonisolated let id = UUID()
+    static let largeFileThresholdKey = "largeFile.thresholdMB"
     private(set) var url: URL
     @Published var text: String = ""
     @Published var mode: Mode = .rendered
@@ -13,15 +14,19 @@ final class OpenDocument: ObservableObject, Identifiable {
     @Published var showFindBar = false
     @Published private(set) var stateMachine = DocumentStateMachine()
     @Published private(set) var lossyDecoded = false
+    @Published private(set) var isWatching = false
     var savedScrollTop: Double = 0          // remembered across tab switches
     var onDiskReload: (() -> Void)?         // UI hook: trigger re-render
 
     private let watcherDebounce: TimeInterval
+    private let settingsDefaults: UserDefaults
     private var watcher: FileWatcher?
 
-    init(url: URL, watcherDebounce: TimeInterval = 0.1) {
+    init(url: URL, watcherDebounce: TimeInterval = 0.1,
+         settingsDefaults: UserDefaults = .standard) {
         self.url = url.standardizedFileURL
         self.watcherDebounce = watcherDebounce
+        self.settingsDefaults = settingsDefaults
     }
 
     var displayName: String { url.lastPathComponent }
@@ -32,6 +37,7 @@ final class OpenDocument: ObservableObject, Identifiable {
     }
 
     func teardown() {
+        isWatching = false
         watcher?.stop()
         watcher = nil
     }
@@ -59,6 +65,7 @@ final class OpenDocument: ObservableObject, Identifiable {
         text = fresh
         dispatch(.reloadedFromDisk)
         banner = .none
+        if watcher != nil { isWatching = true }
         onDiskReload?()
     }
 
@@ -94,6 +101,7 @@ final class OpenDocument: ObservableObject, Identifiable {
         }
         w.start()
         watcher = w
+        isWatching = true
     }
 
     private func dispatch(_ event: DocumentEvent) {
@@ -103,14 +111,22 @@ final class OpenDocument: ObservableObject, Identifiable {
         switch action {
         case .reloadFromDisk: reloadFromDisk()
         case .showConflictBanner: banner = .conflict
-        case .showMissingBanner: banner = .missing
+        case .showMissingBanner:
+            // the file is gone; the watcher's vnode source is now dead. Release
+            // it so isWatching (and the watcher != nil guard) stay truthful —
+            // a Save / Save As re-arms a fresh watcher on the restored file.
+            isWatching = false
+            watcher?.stop()
+            watcher = nil
+            banner = .missing
         case .none: break
         }
     }
 
     private func readFromDisk() throws -> String {
         let data = try Data(contentsOf: url)
-        if data.count > 2_000_000, banner == .none {
+        let thresholdMB = settingsDefaults.object(forKey: Self.largeFileThresholdKey) as? Double ?? 2.0
+        if Double(data.count) > thresholdMB * 1_000_000, banner == .none {
             banner = .notice("Large file. Rendering may take a moment.")
         }
         if let s = String(data: data, encoding: .utf8) {
