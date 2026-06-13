@@ -12,11 +12,24 @@ Reading a rendered Markdown file should not require launching an IDE. viewmd is 
 - Font packs (Theme default, Serif, Mono) and a custom font picker, independent of themes
 - The Aa panel: theme grid, appearance, fonts, size, width, spacing, code block style in one place
 - GitHub-flavored Markdown with Mermaid diagrams and KaTeX math, fully offline
+- Document outline: a Files and Outline switcher in the sidebar, click any heading to jump there
+- Quick Look: press Space on a .md file in Finder to see it rendered, not as raw source
+- Export and share: save as PDF, print, or copy as HTML or rich text
+- Reading statistics: word count and reading time, always shown in the sidebar
 - Live reload: files re-render as they change on disk, scroll position preserved, with a live indicator
 - Never clobbers your edits: external changes show a banner when you have unsaved work
 - Toggle to source with Cmd+E, save with Cmd+S, full undo
 - Welcome screen with recents, filter the tree with Cmd+P, find with Cmd+F
 - CLI: `viewmd notes.md`, `viewmd docs/`, or bare `viewmd` for the current folder
+
+## What's new in 0.3.0
+
+- Document outline panel with jump to heading
+- Export to PDF, print, and copy as HTML or rich text
+- Reading statistics (word count and reading time)
+- Quick Look preview: rendered Markdown when you press Space in Finder
+- Power-user config: a `settings.json` and a `user.css` overlay in Application Support
+- Check for Updates from the app menu
 
 ## Build
 
@@ -43,3 +56,10 @@ Drop a `.css` file into `~/Library/Application Support/viewmd/themes` and it app
 ```
 
 Define page colors under `[data-appearance="light"]` / `[data-appearance="dark"]` and code block colors under `[data-code="light"]` / `[data-code="dark"]`. See any bundled theme in `web/themes/` for the variable names.
+
+## Power-user customization
+
+Two optional files live in `~/Library/Application Support/viewmd/`, both seeded with examples on first launch:
+
+- `settings.json`: a small set of power-user keys (default open directory, large-file threshold, whether `user.css` is applied). Edit it and relaunch.
+- `user.css`: any CSS here is applied on top of the active theme, so its rules win. Edits apply on the next render, no relaunch needed.
