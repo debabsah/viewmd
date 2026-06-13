@@ -11,6 +11,16 @@ final class WindowUIState: ObservableObject {
     @Published var aaPanelShown = false
     /// Incremented to ask the sidebar to focus its filter field (⌘P).
     @Published var filterFocusToken = 0
+    /// Briefly true after a live disk reload — the sidebar dot flashes accent.
+    @Published var reloadFlash = false
+
+    func flashReload() {
+        reloadFlash = true
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 600_000_000)
+            self.reloadFlash = false
+        }
+    }
 
     func persistWidth() {
         SidebarDefaults.saveWidth(sidebarWidth)

@@ -103,6 +103,7 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
             guard let self, let doc else { return }
             // background tabs reload their model silently; only the active tab renders
             guard doc.id == self.workspace.activeTabID else { return }
+            self.ui.flashReload()
             self.render(doc, scroll: RenderBridge.Scroll(mode: "anchor", top: nil))
         }
         render(doc, scroll: RenderBridge.Scroll(mode: "absolute", top: doc.savedScrollTop))

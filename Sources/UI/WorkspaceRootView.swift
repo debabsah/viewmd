@@ -17,11 +17,11 @@ struct WorkspaceRootView: View {
                 openFileAction: openFilePanel,
                 revealInFinder: controller.revealInFinder)
             HStack(spacing: 0) {
-                // Sidebar v2 mounts here in Task 7; placeholder keeps layout stable
                 if ui.sidebarVisible && workspace.folderURL != nil {
-                    Rectangle()
-                        .fill(controller.palette.sideBackground.color)
+                    SidebarV2View(controller: controller, workspace: workspace,
+                                  ui: ui, isPeek: false)
                         .frame(width: ui.sidebarWidth)
+                        .transition(.move(edge: .leading))
                 }
                 Group {
                     if let tab = workspace.activeTab {
