@@ -35,6 +35,7 @@ struct TabStripView: View {
                     palette: palette,
                     activate: { workspace.activeTabID = tab.id },
                     close: { workspace.closeTab(id: tab.id) },
+                    closeOthers: { workspace.closeTabs(except: tab.id) },
                     reveal: { revealInFinder(tab.url) })
             }
             Button(action: openFileAction) {
@@ -59,6 +60,7 @@ private struct TabItem: View {
     let palette: ShellPalette
     let activate: () -> Void
     let close: () -> Void
+    let closeOthers: () -> Void
     let reveal: () -> Void
     @State private var hovering = false
 
@@ -88,6 +90,7 @@ private struct TabItem: View {
         .onHover { hovering = $0 }
         .contextMenu {
             Button("Close Tab", action: close)
+            Button("Close Others", action: closeOthers)
             Button("Reveal in Finder", action: reveal)
         }
         .frame(maxHeight: .infinity, alignment: .bottom)

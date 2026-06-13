@@ -7,25 +7,28 @@ import Combine
 @MainActor
 final class ComfortModel: ObservableObject {
     @Published var settings: ComfortSettings {
-        didSet { settings.save(to: defaults) }
+        didSet { if !suppressSave { settings.save(to: defaults) } }
     }
     let themeStore: ThemeStore
     var onChange: (() -> Void)?
     private let defaults: UserDefaults
     private var cancellable: AnyCancellable?
+    private var suppressSave = false
 
     init(themeStore: ThemeStore = ThemeStore(), defaults: UserDefaults = .standard) {
         self.themeStore = themeStore
         self.defaults = defaults
         self.settings = ComfortSettings.load(from: defaults)
         // Dev hook for the screenshot suite: VMD_THEME / VMD_APPEARANCE force
-        // the theme without touching persisted settings (direct-exec only).
+        // the theme in-memory WITHOUT persisting (suppressSave guards didSet).
+        suppressSave = true
         if let forced = ProcessInfo.processInfo.environment["VMD_THEME"] {
             settings.themeID = forced
         }
         if let forcedAppearance = ProcessInfo.processInfo.environment["VMD_APPEARANCE"] {
             settings.appearanceOverride = forcedAppearance
         }
+        suppressSave = false
         cancellable = $settings
             .dropFirst()
             .debounce(for: .milliseconds(150), scheduler: DispatchQueue.main)

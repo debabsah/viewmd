@@ -46,6 +46,13 @@ final class Workspace: ObservableObject {
         }
     }
 
+    /// Close every tab except the given one, which becomes active.
+    func closeTabs(except id: UUID) {
+        for tab in tabs where tab.id != id { tab.teardown() }
+        tabs.removeAll { $0.id != id }
+        activeTabID = id
+    }
+
     func teardown() {
         tabs.forEach { $0.teardown() }
         folderWatcher?.stop()

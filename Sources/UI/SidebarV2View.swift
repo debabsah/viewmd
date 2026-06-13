@@ -71,9 +71,8 @@ struct SidebarV2View: View {
             Text("· \(fileCount) files")
                 .font(.system(size: 11.5))
                 .foregroundStyle(palette.mutedText.color)
-            Circle()
-                .fill(dotColor)
-                .frame(width: 6, height: 6)
+            LiveDot(color: dotColor,
+                    pulsing: workspace.activeTab?.isWatching == true)
                 .help(dotHelp)
             Spacer()
             if !isPeek {
@@ -173,6 +172,33 @@ struct SidebarV2View: View {
 
     private var editActive: Bool {
         workspace.activeTab?.mode == .source
+    }
+}
+
+/// The watch indicator: a solid dot with a soft halo that pulses outward
+/// while the active document is being watched (the halo stays invisible when
+/// not watching). The animation runs continuously; visibility is gated by
+/// `pulsing`, so it reacts immediately when watch state changes.
+private struct LiveDot: View {
+    let color: Color
+    let pulsing: Bool
+    @State private var phase = false
+
+    var body: some View {
+        Circle()
+            .fill(color)
+            .frame(width: 6, height: 6)
+            .background(
+                Circle()
+                    .stroke(color, lineWidth: 1.5)
+                    .scaleEffect(phase ? 2.6 : 1)
+                    .opacity(pulsing ? (phase ? 0 : 0.55) : 0)
+            )
+            .onAppear {
+                withAnimation(.easeOut(duration: 1.8).repeatForever(autoreverses: false)) {
+                    phase = true
+                }
+            }
     }
 }
 
