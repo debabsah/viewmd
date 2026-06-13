@@ -3,10 +3,12 @@ import SwiftUI
 import Combine
 
 @MainActor
-final class WorkspaceWindowController: NSWindowController {
+final class WorkspaceWindowController: NSWindowController, ObservableObject {
     let workspace = Workspace()
     let bridge = RenderBridge()
     let comfortModel = ComfortModel()
+    let ui = WindowUIState()
+    @Published private(set) var palette: ShellPalette = .refinedLight
     private var cancellables = Set<AnyCancellable>()
     private var lastTabID: UUID?
     private var appearanceObservation: NSKeyValueObservation?
@@ -16,25 +18,32 @@ final class WorkspaceWindowController: NSWindowController {
             contentRect: NSRect(x: 0, y: 0, width: 1000, height: 760),
             styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered, defer: false)
-        window.titlebarAppearsTransparent = false
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.styleMask.insert(.fullSizeContentView)
         window.center()
         window.setFrameAutosaveName("viewmd.workspace")
         self.init(window: window)
+
+        recomputePalette()
+
         window.contentView = NSHostingView(rootView: WorkspaceRootView(
-            workspace: workspace, bridge: bridge,
-            openURL: { [weak self] in self?.open(url: $0) }))
+            controller: self, workspace: workspace, ui: ui, bridge: bridge,
+            openURL: { [weak self] in self?.open(url: $0) },
+            openFilePanel: {
+                (NSApp.delegate as? AppDelegate)?.openDocumentAction(nil)
+            }))
 
-        let accessory = NSTitlebarAccessoryViewController()
-        accessory.view = NSHostingView(rootView: TitlebarAccessoryView(
-            model: comfortModel,
-            toggleSidebar: { [weak self] in self?.toggleSidebarAction(nil) }))
-        accessory.layoutAttribute = .trailing
-        window.addTitlebarAccessoryViewController(accessory)
-
-        comfortModel.onChange = { [weak self] in self?.rerenderActive() }
+        comfortModel.onChange = { [weak self] in
+            self?.recomputePalette()
+            self?.rerenderActive()
+        }
 
         appearanceObservation = NSApp.observe(\.effectiveAppearance) { [weak self] _, _ in
-            Task { @MainActor in self?.rerenderActive() }
+            Task { @MainActor in
+                self?.recomputePalette()
+                self?.rerenderActive()
+            }
         }
 
         bridge.onOpenExternal = { NSWorkspace.shared.open($0) }
@@ -51,6 +60,20 @@ final class WorkspaceWindowController: NSWindowController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] id in self?.activeTabChanged(to: id) }
             .store(in: &cancellables)
+    }
+
+    func recomputePalette() {
+        let s = comfortModel.settings
+        let systemDark = NSApp.effectiveAppearance
+            .bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        let appearance = s.appearanceOverride ?? (systemDark ? "dark" : "light")
+        let theme = comfortModel.themeStore.theme(id: s.themeID)
+        palette = theme?.shellPalette(appearance: appearance)
+            ?? (appearance == "dark" ? .refinedDark : .refinedLight)
+    }
+
+    func revealInFinder(_ url: URL) {
+        NSWorkspace.shared.activateFileViewerSelecting([url])
     }
 
     func open(url: URL) {
@@ -116,8 +139,9 @@ final class WorkspaceWindowController: NSWindowController {
     }
 
     @objc func toggleSidebarAction(_ sender: Any?) {
-        let defaults = UserDefaults.standard
-        defaults.set(!defaults.bool(forKey: "showSidebar"), forKey: "showSidebar")
+        withAnimation(.easeOut(duration: 0.26)) {
+            ui.sidebarVisible.toggle()
+        }
     }
 
     @objc func saveDocumentAction(_ sender: Any?) {
