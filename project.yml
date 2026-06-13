@@ -59,6 +59,9 @@ targets:
     platform: macOS
     sources:
       - path: QuickLook
+      - path: web/dist
+        buildPhase: resources
+        type: folder
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.debabsah.viewmd.quicklook
