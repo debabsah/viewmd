@@ -12,6 +12,7 @@ final class OpenDocument: ObservableObject, Identifiable {
     @Published var mode: Mode = .rendered
     @Published var banner: Banner = .none
     @Published var showFindBar = false
+    @Published var headings: [Heading] = []     // outline, refreshed on each render
     @Published private(set) var stateMachine = DocumentStateMachine()
     @Published private(set) var lossyDecoded = false
     @Published private(set) var isWatching = false

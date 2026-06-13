@@ -1,6 +1,6 @@
 import mermaid from 'mermaid'
 import { createPipeline } from './pipeline.js'
-import { computeAnchor, computeScrollTop } from './scroll-anchor.js'
+import { computeAnchor, computeScrollTop, keyedHeadings, scrollTopForKey } from './scroll-anchor.js'
 
 const pipeline = createPipeline()
 let mermaidSeq = 0
@@ -15,12 +15,12 @@ function post(message) {
 }
 
 function collectHeadings() {
-  const counts = Object.create(null)
-  return Array.from(docEl().querySelectorAll('h1,h2,h3,h4,h5,h6')).map((el) => {
-    const text = el.textContent.trim()
-    const n = counts[text] = (counts[text] ?? -1) + 1
-    return { key: `${text}#${n}`, top: el.offsetTop }
-  })
+  const raw = Array.from(docEl().querySelectorAll('h1,h2,h3,h4,h5,h6')).map((el) => ({
+    text: el.textContent.trim(),
+    top: el.offsetTop,
+    level: Number(el.tagName[1])
+  }))
+  return keyedHeadings(raw)
 }
 
 async function renderMermaidBlocks() {
@@ -78,10 +78,15 @@ window.viewmd = {
     if (anchor) scroller.scrollTop = computeScrollTop(collectHeadings(), anchor)
     else if (payload.scroll?.mode === 'absolute') scroller.scrollTop = payload.scroll.top
     else scroller.scrollTop = 0
+    post({ type: 'headings', items: collectHeadings().map((h) => ({ key: h.key, level: h.level, text: h.text })) })
     post({ type: 'rendered' })
   },
   applyAppearance,
-  scrollTop: () => document.scrollingElement.scrollTop
+  scrollTop: () => document.scrollingElement.scrollTop,
+  scrollToHeading(key) {
+    const top = scrollTopForKey(collectHeadings(), key)
+    document.scrollingElement.scrollTo({ top, behavior: 'smooth' })
+  }
 }
 
 document.addEventListener('click', (e) => {

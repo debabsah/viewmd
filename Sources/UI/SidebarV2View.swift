@@ -30,24 +30,58 @@ struct SidebarV2View: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            filterRow
-            ScrollView {
-                LazyVStack(spacing: 1) {
-                    TreeLevel(nodes: visibleTree, depth: 0, palette: palette,
-                              expanded: $expanded,
-                              forceExpand: !filterQuery.isEmpty,
-                              activeURL: workspace.activeTab?.url,
-                              open: { workspace.openFile($0) })
+            tabSwitcher
+            if ui.sidebarTab == .files {
+                filterRow
+                ScrollView {
+                    LazyVStack(spacing: 1) {
+                        TreeLevel(nodes: visibleTree, depth: 0, palette: palette,
+                                  expanded: $expanded,
+                                  forceExpand: !filterQuery.isEmpty,
+                                  activeURL: workspace.activeTab?.url,
+                                  open: { workspace.openFile($0) })
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.top, 4)
                 }
-                .padding(.horizontal, 8)
-                .padding(.top, 4)
+            } else if let tab = workspace.activeTab {
+                OutlinePane(document: tab, palette: palette,
+                            onTap: { controller.scrollToHeading($0) })
+            } else {
+                OutlineEmpty(palette: palette, message: "Open a document to see its outline")
             }
             bottomCluster
         }
         .background(palette.sideBackground.color)
         .onAppear { expandAll() }
         .onChange(of: workspace.folderURL) { _ in expandAll() }
-        .onChange(of: ui.filterFocusToken) { _ in filterFocused = true }
+        .onChange(of: ui.filterFocusToken) { _ in
+            ui.sidebarTab = .files
+            DispatchQueue.main.async { filterFocused = true }
+        }
+    }
+
+    private var tabSwitcher: some View {
+        HStack(spacing: 4) {
+            segButton("Files", tab: .files)
+            segButton("Outline", tab: .outline)
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.bottom, 5)
+    }
+
+    @ViewBuilder
+    private func segButton(_ title: String, tab: WindowUIState.SidebarTab) -> some View {
+        let active = ui.sidebarTab == tab
+        Text(title)
+            .font(.system(size: 12, weight: active ? .semibold : .regular))
+            .foregroundStyle((active ? palette.accentText : palette.mutedText).color)
+            .padding(.horizontal, 9).padding(.vertical, 3)
+            .background(RoundedRectangle(cornerRadius: 7)
+                .fill(active ? palette.tint.color : Color.clear))
+            .contentShape(Rectangle())
+            .onTapGesture { ui.sidebarTab = tab }
     }
 
     private func expandAll() {
@@ -218,6 +252,84 @@ struct SidebarRow<Content: View>: View {
             .contentShape(Rectangle())
             .onHover { hovering = $0 }
             .onTapGesture { action?() }
+    }
+}
+
+/// The outline pane: the active document's headings, indented by level, each
+/// tappable to scroll the document to that heading. Observes the document so it
+/// refreshes whenever a render posts a fresh heading list. Palette colors only.
+private struct OutlinePane: View {
+    @ObservedObject var document: OpenDocument
+    let palette: ShellPalette
+    let onTap: (String) -> Void
+
+    var body: some View {
+        if document.headings.isEmpty {
+            OutlineEmpty(palette: palette, message: "No headings in this document")
+        } else {
+            ScrollView {
+                LazyVStack(spacing: 1) {
+                    ForEach(document.headings) { heading in
+                        OutlineRow(heading: heading, palette: palette,
+                                   tap: { onTap(heading.key) })
+                    }
+                }
+                .padding(.horizontal, 8)
+                .padding(.top, 4)
+            }
+        }
+    }
+}
+
+private struct OutlineRow: View {
+    let heading: Heading
+    let palette: ShellPalette
+    let tap: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(heading.text)
+                .font(.system(size: fontSize, weight: heading.level <= 1 ? .semibold : .regular))
+                .foregroundStyle((heading.level <= 1 ? palette.softText : palette.mutedText).color)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Spacer(minLength: 0)
+        }
+        .padding(.leading, CGFloat(max(0, heading.level - 1)) * 12 + 8)
+        .padding(.trailing, 8)
+        .frame(height: 26)
+        .background(RoundedRectangle(cornerRadius: 8)
+            .fill(hovering ? palette.wash.color : Color.clear))
+        .contentShape(Rectangle())
+        .onHover { hovering = $0 }
+        .onTapGesture(perform: tap)
+    }
+
+    private var fontSize: CGFloat {
+        switch heading.level {
+        case 1: return 13.5
+        case 2: return 13
+        default: return 12.5
+        }
+    }
+}
+
+private struct OutlineEmpty: View {
+    let palette: ShellPalette
+    let message: String
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text(message)
+                .font(.system(size: 12.5))
+                .foregroundStyle(palette.mutedText.color)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
+                .padding(.top, 20)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

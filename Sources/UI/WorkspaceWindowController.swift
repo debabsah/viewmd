@@ -51,6 +51,9 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
             }
         }
 
+        bridge.onHeadings = { [weak self] heads in
+            self?.workspace.activeTab?.headings = heads
+        }
         bridge.onOpenExternal = { NSWorkspace.shared.open($0) }
         bridge.onOpenRelative = { [weak self] href in
             guard let self,
@@ -155,6 +158,17 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
         withAnimation(.easeOut(duration: 0.26)) {
             ui.sidebarVisible.toggle()
         }
+    }
+
+    func scrollToHeading(_ key: String) {
+        bridge.scrollToHeading(key)
+    }
+
+    @objc func showOutlineAction(_ sender: Any?) {
+        if !ui.sidebarVisible {
+            withAnimation(.easeOut(duration: 0.26)) { ui.sidebarVisible = true }
+        }
+        ui.sidebarTab = .outline
     }
 
     @objc func showAaPanelAction(_ sender: Any?) {

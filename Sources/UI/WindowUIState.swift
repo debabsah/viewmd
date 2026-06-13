@@ -5,6 +5,10 @@ import Combine
 /// Aa panel presentation, and the filter-focus signal.
 @MainActor
 final class WindowUIState: ObservableObject {
+    /// Which pane the sidebar shows: the file tree or the document outline.
+    enum SidebarTab { case files, outline }
+
+    @Published var sidebarTab: SidebarTab = .files
     @Published var sidebarVisible = true {
         didSet { if sidebarVisible { peekShown = false } }
     }

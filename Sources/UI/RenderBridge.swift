@@ -23,6 +23,7 @@ final class RenderBridge: NSObject {
 
     let webView: WKWebView
     var onRendered: (() -> Void)?
+    var onHeadings: (([Heading]) -> Void)?
     var onOpenExternal: ((URL) -> Void)?
     var onOpenRelative: ((String) -> Void)?
 
@@ -80,6 +81,13 @@ final class RenderBridge: NSObject {
         }
     }
 
+    func scrollToHeading(_ key: String) {
+        // encode the key as a JS string literal so quotes/specials can't break out
+        guard let data = try? JSONEncoder().encode(key),
+              let json = String(data: data, encoding: .utf8) else { return }
+        webView.evaluateJavaScript("window.viewmd.scrollToHeading(\(json))")
+    }
+
     fileprivate func handleMessage(_ body: Any) {
         guard let dict = body as? [String: Any],
               let type = dict["type"] as? String else { return }
@@ -92,6 +100,10 @@ final class RenderBridge: NSObject {
             }
         case "rendered":
             onRendered?()
+        case "headings":
+            if let items = dict["items"] as? [[String: Any]] {
+                onHeadings?(Heading.parse(items))
+            }
         case "openExternal":
             if let href = dict["href"] as? String, let url = URL(string: href) {
                 onOpenExternal?(url)

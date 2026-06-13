@@ -37,6 +37,11 @@ enum SnapshotHook {
             // panel's popover anchors to a sidebar row)
             controller.showAaPanelAction(nil)
         }
+        if env["VMD_SHOT_OUTLINE"] == "1",
+           let controller = (NSApp.delegate as? AppDelegate)?.controllers.first {
+            // reveal the sidebar and switch it to the document outline pane
+            controller.showOutlineAction(nil)
+        }
         if env["VMD_SHOT_SETTINGS"] == "1" {
             (NSApp.delegate as? AppDelegate)?.showSettingsAction(nil)
         }

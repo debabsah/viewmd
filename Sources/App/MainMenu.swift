@@ -110,6 +110,11 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
         menu.addItem(withTitle: "Toggle Sidebar",
                      action: #selector(WorkspaceWindowController.toggleSidebarAction(_:)),
                      keyEquivalent: "b")
+        let outline = NSMenuItem(title: "Show Outline",
+                                 action: #selector(WorkspaceWindowController.showOutlineAction(_:)),
+                                 keyEquivalent: "o")
+        outline.keyEquivalentModifierMask = [.command, .control]
+        menu.addItem(outline)
         menu.addItem(withTitle: "Edit Mode",
                      action: #selector(WorkspaceWindowController.toggleSourceAction(_:)),
                      keyEquivalent: "e")
