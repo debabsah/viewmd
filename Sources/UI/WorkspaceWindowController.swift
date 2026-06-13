@@ -152,6 +152,20 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
         }
     }
 
+    @objc func showAaPanelAction(_ sender: Any?) {
+        if !ui.sidebarVisible {
+            withAnimation(.easeOut(duration: 0.26)) { ui.sidebarVisible = true }
+        }
+        ui.aaPanelShown = true
+    }
+
+    @objc func focusFilterAction(_ sender: Any?) {
+        if !ui.sidebarVisible {
+            withAnimation(.easeOut(duration: 0.26)) { ui.sidebarVisible = true }
+        }
+        ui.filterFocusToken += 1
+    }
+
     @objc func saveDocumentAction(_ sender: Any?) {
         guard let doc = workspace.activeTab else { return }
         do {

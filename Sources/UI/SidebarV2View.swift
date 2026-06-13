@@ -144,7 +144,7 @@ struct SidebarV2View: View {
                 Spacer()
             }
             .popover(isPresented: $ui.aaPanelShown, arrowEdge: .trailing) {
-                AaPanelPlaceholder()   // replaced by AaPanelView in Task 10
+                AaPanelView(controller: controller, model: controller.comfortModel)
             }
             SidebarRow(palette: palette, action: { controller.toggleSourceAction(nil) }) {
                 Image(systemName: "pencil").font(.system(size: 12))
@@ -296,14 +296,5 @@ private struct FileRow: View {
         .contentShape(Rectangle())
         .onHover { hovering = $0 }
         .onTapGesture(perform: open)
-    }
-}
-
-/// Temporary stand-in until Task 10 ships the real panel.
-struct AaPanelPlaceholder: View {
-    var body: some View {
-        Text("Theme & display — Task 10")
-            .font(.system(size: 12))
-            .padding(20)
     }
 }
