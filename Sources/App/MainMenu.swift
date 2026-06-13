@@ -29,6 +29,8 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
         menu.addItem(withTitle: "About viewmd",
                      action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
                      keyEquivalent: "")
+        menu.addItem(withTitle: "Check for Updates…",
+                     action: #selector(AppDelegate.checkForUpdatesAction(_:)), keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Settings…",
                      action: #selector(AppDelegate.showSettingsAction(_:)), keyEquivalent: ",")

@@ -84,6 +84,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSDocumentController.shared.clearRecentDocuments(nil)
     }
 
+    @MainActor @objc func checkForUpdatesAction(_ sender: Any?) {
+        Updater.checkForUpdates(userInitiated: true)
+    }
+
     @objc func showSettingsAction(_ sender: Any?) {
         if settingsWindow == nil {
             let window = NSWindow(

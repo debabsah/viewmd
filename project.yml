@@ -28,6 +28,8 @@ targets:
       properties:
         CFBundleDisplayName: viewmd
         CFBundleName: viewmd
+        CFBundleShortVersionString: "0.3.0"
+        CFBundleVersion: "0.3.0"
         NSPrincipalClass: NSApplication
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: ""
