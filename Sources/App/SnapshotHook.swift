@@ -28,7 +28,9 @@ enum SnapshotHook {
         }
         if env["VMD_SHOT_AA"] == "1",
            let controller = (NSApp.delegate as? AppDelegate)?.controllers.first {
-            controller.ui.aaPanelShown = true
+            // route through the action so the sidebar is revealed first (the
+            // panel's popover anchors to a sidebar row)
+            controller.showAaPanelAction(nil)
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
