@@ -5,7 +5,9 @@ import Combine
 /// Aa panel presentation, and the filter-focus signal.
 @MainActor
 final class WindowUIState: ObservableObject {
-    @Published var sidebarVisible = true
+    @Published var sidebarVisible = true {
+        didSet { if sidebarVisible { peekShown = false } }
+    }
     @Published var sidebarWidth: Double = SidebarDefaults.loadWidth()
     @Published var peekShown = false
     @Published var aaPanelShown = false

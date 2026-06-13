@@ -16,24 +16,54 @@ struct WorkspaceRootView: View {
                 palette: controller.palette,
                 openFileAction: openFilePanel,
                 revealInFinder: controller.revealInFinder)
-            HStack(spacing: 0) {
-                if ui.sidebarVisible && workspace.folderURL != nil {
-                    SidebarV2View(controller: controller, workspace: workspace,
-                                  ui: ui, isPeek: false)
-                        .frame(width: ui.sidebarWidth)
-                        .transition(.move(edge: .leading))
-                    SidebarResizeHandle(ui: ui)
+            ZStack(alignment: .topLeading) {
+                HStack(spacing: 0) {
+                    if ui.sidebarVisible && workspace.folderURL != nil {
+                        SidebarV2View(controller: controller, workspace: workspace,
+                                      ui: ui, isPeek: false)
+                            .frame(width: ui.sidebarWidth)
+                            .transition(.move(edge: .leading))
+                        SidebarResizeHandle(ui: ui)
+                    }
+                    Group {
+                        if let tab = workspace.activeTab {
+                            ActiveDocumentView(document: tab, bridge: bridge)
+                                .id(tab.id)
+                        } else {
+                            EmptyDropHint()
+                        }
+                    }
+                    .frame(minWidth: 400, maxWidth: .infinity)
+                    .background(controller.palette.background.color)
                 }
-                Group {
-                    if let tab = workspace.activeTab {
-                        ActiveDocumentView(document: tab, bridge: bridge)
-                            .id(tab.id)
-                    } else {
-                        EmptyDropHint()
+
+                if !ui.sidebarVisible && workspace.folderURL != nil {
+                    // 16px hover hot zone on the window's left edge
+                    Color.clear
+                        .frame(width: 16)
+                        .frame(maxHeight: .infinity)
+                        .contentShape(Rectangle())
+                        .onHover { inside in
+                            if inside {
+                                withAnimation(.easeOut(duration: 0.24)) { ui.peekShown = true }
+                            }
+                        }
+                    if ui.peekShown {
+                        SidebarV2View(controller: controller, workspace: workspace,
+                                      ui: ui, isPeek: true)
+                            .frame(width: 236)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .shadow(color: .black.opacity(0.25), radius: 22, y: 8)
+                            .padding(.leading, 8)
+                            .padding(.vertical, 10)
+                            .onHover { inside in
+                                if !inside {
+                                    withAnimation(.easeOut(duration: 0.2)) { ui.peekShown = false }
+                                }
+                            }
+                            .transition(.move(edge: .leading).combined(with: .opacity))
                     }
                 }
-                .frame(minWidth: 400, maxWidth: .infinity)
-                .background(controller.palette.background.color)
             }
         }
         .frame(minWidth: 480, minHeight: 320)
