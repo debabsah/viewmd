@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             SessionStore.apply(snapshot, using: mainController())
         }
         NSApp.activate(ignoringOtherApps: true)
+        SnapshotHook.runIfRequested()
     }
 
     @MainActor
