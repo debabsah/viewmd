@@ -21,8 +21,8 @@ export function createPipeline() {
   const state = { frontmatter: null }
 
   const md = new MarkdownIt({
-    html: false,        // raw HTML stays escaped — agent output is untrusted
-    linkify: true,
+    html: true,         // render raw HTML (banners, <details>, <img>, tables…)
+    linkify: true,      // the renderer sanitizes the output with DOMPurify
     highlight
   })
   md.use(taskLists, { enabled: false }) // render checkboxes, keep them inert

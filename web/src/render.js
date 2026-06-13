@@ -1,5 +1,6 @@
 import mermaid from 'mermaid'
 import { createPipeline } from './pipeline.js'
+import { sanitize } from './sanitize.js'
 import { computeAnchor, computeScrollTop, keyedHeadings, scrollTopForKey } from './scroll-anchor.js'
 
 const pipeline = createPipeline()
@@ -72,7 +73,7 @@ window.viewmd = {
       : null
     applyAppearance(payload)
     const { html } = pipeline.render(payload.text ?? '')
-    docEl().innerHTML = html
+    docEl().innerHTML = sanitize(html)   // strip scripts/handlers before display
     await renderMermaidBlocks()
     if (gen !== renderGen) return   // a newer render superseded this pass
     if (anchor) scroller.scrollTop = computeScrollTop(collectHeadings(), anchor)

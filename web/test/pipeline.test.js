@@ -36,9 +36,11 @@ test('unknown language falls back to escaped plain block', () => {
   assert.doesNotMatch(html, /<b>&/)
 })
 
-test('raw HTML in markdown is escaped, not executed', () => {
-  const html = render('<script>alert(1)</script>')
-  assert.doesNotMatch(html, /<script>/)
+test('raw HTML passes through the pipeline (renderer sanitizes it)', () => {
+  // html:true lets GitHub-style banners/blocks render; the renderer runs the
+  // output through DOMPurify before display (see sanitize.test.js)
+  assert.match(render('<pre>banner</pre>'), /<pre>banner<\/pre>/)
+  assert.match(render('<details><summary>s</summary>b</details>'), /<details>/)
 })
 
 test('heading and inline code render', () => {
