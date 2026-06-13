@@ -81,8 +81,15 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
         FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
         if isDir.boolValue {
             workspace.openFolder(url)
+            withAnimation(.easeOut(duration: 0.26)) { ui.sidebarVisible = true }
         } else {
             workspace.openFile(url)
+            if workspace.folderURL == nil {
+                // prime the containing folder so » / ⌘B reveals context,
+                // but keep the focus on the document (spec: first-run flow)
+                workspace.openFolder(url.deletingLastPathComponent())
+                ui.sidebarVisible = false
+            }
         }
         NSDocumentController.shared.noteNewRecentDocumentURL(url)
         showWindow(nil)

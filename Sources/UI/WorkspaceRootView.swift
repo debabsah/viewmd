@@ -22,6 +22,7 @@ struct WorkspaceRootView: View {
                                   ui: ui, isPeek: false)
                         .frame(width: ui.sidebarWidth)
                         .transition(.move(edge: .leading))
+                    SidebarResizeHandle(ui: ui)
                 }
                 Group {
                     if let tab = workspace.activeTab {
@@ -57,5 +58,35 @@ struct EmptyDropHint: View {
                 .foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// 5pt invisible divider; drag resizes the sidebar within spec bounds.
+struct SidebarResizeHandle: View {
+    @ObservedObject var ui: WindowUIState
+    @State private var startWidth: Double?
+
+    var body: some View {
+        Rectangle()
+            .fill(Color.clear)
+            .frame(width: 5)
+            .contentShape(Rectangle())
+            .onHover { inside in
+                if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() }
+            }
+            .gesture(
+                DragGesture(minimumDistance: 1)
+                    .onChanged { value in
+                        if startWidth == nil { startWidth = ui.sidebarWidth }
+                        let proposed = (startWidth ?? SidebarDefaults.defaultWidth)
+                            + value.translation.width
+                        ui.sidebarWidth = min(max(proposed,
+                                                  SidebarDefaults.widthRange.lowerBound),
+                                              SidebarDefaults.widthRange.upperBound)
+                    }
+                    .onEnded { _ in
+                        startWidth = nil
+                        ui.persistWidth()
+                    })
     }
 }
