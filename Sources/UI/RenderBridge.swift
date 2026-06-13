@@ -88,6 +88,27 @@ final class RenderBridge: NSObject {
         webView.evaluateJavaScript("window.viewmd.scrollToHeading(\(json))")
     }
 
+    // MARK: - Export
+
+    /// Rasterize the rendered document to a PDF (native WebKit, no dependency).
+    func exportPDF(_ completion: @escaping (Data?) -> Void) {
+        webView.createPDF(configuration: WKPDFConfiguration()) { result in
+            completion(try? result.get())
+        }
+    }
+
+    /// The rendered document fragment's HTML (the `#vmd-doc` inner markup).
+    func renderedHTML(_ completion: @escaping (String?) -> Void) {
+        webView.evaluateJavaScript("document.getElementById('vmd-doc').innerHTML") { value, _ in
+            completion(value as? String)
+        }
+    }
+
+    /// A print operation over the rendered document, paginated by WebKit.
+    func printOperation() -> NSPrintOperation {
+        webView.printOperation(with: NSPrintInfo.shared)
+    }
+
     fileprivate func handleMessage(_ body: Any) {
         guard let dict = body as? [String: Any],
               let type = dict["type"] as? String else { return }

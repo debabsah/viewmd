@@ -69,6 +69,14 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
                      action: #selector(WorkspaceWindowController.revealActiveInFinderAction(_:)),
                      keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
+        menu.addItem(withTitle: "Export as PDF…",
+                     action: #selector(WorkspaceWindowController.exportPDFAction(_:)),
+                     keyEquivalent: "")
+        // Print has no key equivalent: ⌘P is reserved for Filter Files (locked design)
+        menu.addItem(withTitle: "Print…",
+                     action: #selector(WorkspaceWindowController.printDocumentAction(_:)),
+                     keyEquivalent: "")
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Close Tab",
                      action: #selector(WorkspaceWindowController.closeTabAction(_:)),
                      keyEquivalent: "w")
@@ -94,6 +102,13 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
         menu.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
         menu.addItem(withTitle: "Select All",
                      action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(withTitle: "Copy as HTML",
+                     action: #selector(WorkspaceWindowController.copyAsHTMLAction(_:)),
+                     keyEquivalent: "")
+        menu.addItem(withTitle: "Copy as Rich Text",
+                     action: #selector(WorkspaceWindowController.copyAsRichTextAction(_:)),
+                     keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
         let find = NSMenuItem(title: "Find…",
                               action: #selector(WorkspaceWindowController.findAction(_:)),
@@ -133,6 +148,10 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
         menu.addItem(fontItem)
         menu.addItem(withTitle: "Theme & Display…",
                      action: #selector(WorkspaceWindowController.showAaPanelAction(_:)),
+                     keyEquivalent: "")
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(withTitle: "Document Statistics",
+                     action: #selector(WorkspaceWindowController.showStatisticsAction(_:)),
                      keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
         let zoomIn = NSMenuItem(title: "Zoom In",

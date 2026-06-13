@@ -51,6 +51,9 @@ struct SidebarV2View: View {
                 OutlineEmpty(palette: palette, message: "Open a document to see its outline")
             }
             bottomCluster
+            if let tab = workspace.activeTab {
+                StatsBar(document: tab, palette: palette)
+            }
         }
         .background(palette.sideBackground.color)
         .onAppear { expandAll() }
@@ -312,6 +315,33 @@ private struct OutlineRow: View {
         case 2: return 13
         default: return 12.5
         }
+    }
+}
+
+/// Thin always-on reader footer: word count and reading time for the active
+/// document. Observes the document so it tracks edits. Tonal background, no
+/// border, per the separate-by-tone rule.
+private struct StatsBar: View {
+    @ObservedObject var document: OpenDocument
+    let palette: ShellPalette
+
+    var body: some View {
+        let s = ReadingStats.compute(document.text)
+        HStack(spacing: 0) {
+            Text(label(s))
+                .font(.system(size: 11))
+                .foregroundStyle(palette.mutedText.color)
+                .lineLimit(1)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 7)
+        .background(palette.wash.color)
+    }
+
+    private func label(_ s: ReadingStats) -> String {
+        guard s.words > 0 else { return "Empty document" }
+        return "\(s.words.formatted()) words · \(s.readingMinutes) min read"
     }
 }
 

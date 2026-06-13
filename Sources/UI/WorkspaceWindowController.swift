@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import Combine
+import UniformTypeIdentifiers
 
 @MainActor
 final class WorkspaceWindowController: NSWindowController, ObservableObject {
@@ -235,6 +236,66 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
     @objc func revealActiveInFinderAction(_ sender: Any?) {
         guard let url = workspace.activeTab?.url else { return }
         revealInFinder(url)
+    }
+
+    // MARK: - Export, print, statistics
+
+    @objc func exportPDFAction(_ sender: Any?) {
+        guard let doc = workspace.activeTab else { return }
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = doc.url.deletingPathExtension().lastPathComponent + ".pdf"
+        panel.allowedContentTypes = [.pdf]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        bridge.exportPDF { data in
+            guard let data else {
+                NSAlert(error: CocoaError(.fileWriteUnknown)).runModal(); return
+            }
+            try? data.write(to: url)
+        }
+    }
+
+    @objc func printDocumentAction(_ sender: Any?) {
+        guard workspace.activeTab != nil, let window else { return }
+        bridge.printOperation().runModal(for: window, delegate: nil, didRun: nil, contextInfo: nil)
+    }
+
+    @objc func copyAsHTMLAction(_ sender: Any?) {
+        guard workspace.activeTab != nil else { return }
+        bridge.renderedHTML { html in
+            guard let html else { return }
+            let pb = NSPasteboard.general
+            pb.clearContents()
+            pb.setString(html, forType: .html)
+            pb.setString(html, forType: .string)
+        }
+    }
+
+    @objc func copyAsRichTextAction(_ sender: Any?) {
+        guard workspace.activeTab != nil else { return }
+        bridge.renderedHTML { html in
+            guard let html, let data = html.data(using: .utf8),
+                  let attr = try? NSAttributedString(
+                    data: data,
+                    options: [.documentType: NSAttributedString.DocumentType.html,
+                              .characterEncoding: String.Encoding.utf8.rawValue],
+                    documentAttributes: nil) else { return }
+            let pb = NSPasteboard.general
+            pb.clearContents()
+            pb.writeObjects([attr])
+        }
+    }
+
+    @objc func showStatisticsAction(_ sender: Any?) {
+        guard let doc = workspace.activeTab else { return }
+        let s = ReadingStats.compute(doc.text)
+        let alert = NSAlert()
+        alert.messageText = doc.displayName
+        alert.informativeText = """
+        \(s.words.formatted()) words
+        \(s.characters.formatted()) characters
+        \(s.readingMinutes) min read
+        """
+        alert.runModal()
     }
 
     func render(_ doc: OpenDocument, scroll: RenderBridge.Scroll?) {
