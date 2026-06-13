@@ -51,6 +51,30 @@ targets:
             UTTypeConformsTo: [public.plain-text]
             UTTypeTagSpecification:
               public.filename-extension: [md, markdown, mdown, mkd]
+    dependencies:
+      - target: viewmdQuickLook
+        embed: true
+  viewmdQuickLook:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: QuickLook
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.debabsah.viewmd.quicklook
+        CODE_SIGN_ENTITLEMENTS: QuickLook/viewmdQuickLook.entitlements
+    info:
+      path: Generated/QuickLook-Info.plist
+      properties:
+        CFBundleDisplayName: viewmd Quick Look
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.quicklook.preview
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).PreviewViewController
+          NSExtensionAttributes:
+            QLSupportedContentTypes:
+              - net.daringfireball.markdown
+              - public.plain-text
+            QLSupportsSearchableItems: false
   viewmdTests:
     type: bundle.unit-test
     platform: macOS
