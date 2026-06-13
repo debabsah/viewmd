@@ -8,6 +8,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         UserDefaults.standard.register(defaults: [SessionStore.restoreEnabledKey: true])
+        RuntimeConfig.bootstrap()
+        // bridge the pro large-file threshold into the knob OpenDocument reads
+        if let mb = RuntimeConfig.largeFileThresholdMB {
+            UserDefaults.standard.set(mb, forKey: OpenDocument.largeFileThresholdKey)
+        }
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -54,6 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let md = UTType("net.daringfireball.markdown") {
             panel.allowedContentTypes = [md, .plainText]
         }
+        if let dir = RuntimeConfig.defaultOpenDirectory { panel.directoryURL = dir }
         if panel.runModal() == .OK, let url = panel.url {
             mainController().open(url: url)
         }
@@ -63,6 +69,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
+        if let dir = RuntimeConfig.defaultOpenDirectory { panel.directoryURL = dir }
         if panel.runModal() == .OK, let url = panel.url {
             mainController().open(url: url)
         }

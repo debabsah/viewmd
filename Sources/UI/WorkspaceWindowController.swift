@@ -303,12 +303,14 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
         let systemDark = NSApp.effectiveAppearance
             .bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         let appearance = s.appearanceOverride ?? (systemDark ? "dark" : "light")
+        let themeCSS = comfortModel.themeStore.theme(id: s.themeID)?.css
+            ?? RenderBridge.bundledThemeCSS("refined")
         bridge.render(RenderBridge.Payload(
             text: doc.text,
             appearance: appearance,
             codeBlocks: s.codeBlocks,
-            themeCSS: comfortModel.themeStore.theme(id: s.themeID)?.css
-                ?? RenderBridge.bundledThemeCSS("refined"),
+            themeCSS: RuntimeConfig.userCSS.map { (themeCSS ?? "") + "\n/* user.css */\n" + $0 }
+                ?? themeCSS,
             comfort: RenderBridge.Comfort(
                 fontFamily: s.effectiveFontFamily,
                 fontSize: s.fontSize,
