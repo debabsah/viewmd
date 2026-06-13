@@ -4,6 +4,14 @@ import AppKit
 final class MainMenuBuilder: NSObject, NSMenuDelegate {
     static let shared = MainMenuBuilder()
     private let recentMenu = NSMenu(title: "Open Recent")
+    private let themeMenu = NSMenu(title: "Theme")
+    private let appearanceMenu = NSMenu(title: "Appearance")
+    private let fontMenu = NSMenu(title: "Font")
+
+    private var activeController: WorkspaceWindowController? {
+        NSApp.mainWindow?.windowController as? WorkspaceWindowController
+            ?? (NSApp.delegate as? AppDelegate)?.controllers.first
+    }
 
     func build() -> NSMenu {
         let main = NSMenu()
@@ -22,10 +30,8 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
                      action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
                      keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
-        let settings = NSMenuItem(title: "Settings…",
-                                  action: #selector(AppDelegate.showSettingsAction(_:)),
-                                  keyEquivalent: ",")
-        menu.addItem(settings)
+        menu.addItem(withTitle: "Settings…",
+                     action: #selector(AppDelegate.showSettingsAction(_:)), keyEquivalent: ",")
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Quit viewmd",
                      action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -43,16 +49,26 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
                                     keyEquivalent: "O")
         openFolder.keyEquivalentModifierMask = [.command, .shift]
         menu.addItem(openFolder)
-
         recentMenu.delegate = self
         let recentItem = NSMenuItem(title: "Open Recent", action: nil, keyEquivalent: "")
         recentItem.submenu = recentMenu
         menu.addItem(recentItem)
-
+        menu.addItem(withTitle: "Filter Files",
+                     action: #selector(WorkspaceWindowController.focusFilterAction(_:)),
+                     keyEquivalent: "p")
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Save",
                      action: #selector(WorkspaceWindowController.saveDocumentAction(_:)),
                      keyEquivalent: "s")
+        let saveAs = NSMenuItem(title: "Save As…",
+                                action: #selector(WorkspaceWindowController.saveAsAction(_:)),
+                                keyEquivalent: "S")
+        saveAs.keyEquivalentModifierMask = [.command, .shift]
+        menu.addItem(saveAs)
+        menu.addItem(withTitle: "Reveal in Finder",
+                     action: #selector(WorkspaceWindowController.revealActiveInFinderAction(_:)),
+                     keyEquivalent: "")
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Close Tab",
                      action: #selector(WorkspaceWindowController.closeTabAction(_:)),
                      keyEquivalent: "w")
@@ -91,12 +107,28 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
     private func viewMenuItem() -> NSMenuItem {
         let item = NSMenuItem()
         let menu = NSMenu(title: "View")
-        menu.addItem(withTitle: "Toggle Source",
-                     action: #selector(WorkspaceWindowController.toggleSourceAction(_:)),
-                     keyEquivalent: "e")
         menu.addItem(withTitle: "Toggle Sidebar",
                      action: #selector(WorkspaceWindowController.toggleSidebarAction(_:)),
                      keyEquivalent: "b")
+        menu.addItem(withTitle: "Edit Mode",
+                     action: #selector(WorkspaceWindowController.toggleSourceAction(_:)),
+                     keyEquivalent: "e")
+        menu.addItem(NSMenuItem.separator())
+        themeMenu.delegate = self
+        let themeItem = NSMenuItem(title: "Theme", action: nil, keyEquivalent: "")
+        themeItem.submenu = themeMenu
+        menu.addItem(themeItem)
+        appearanceMenu.delegate = self
+        let appearanceItem = NSMenuItem(title: "Appearance", action: nil, keyEquivalent: "")
+        appearanceItem.submenu = appearanceMenu
+        menu.addItem(appearanceItem)
+        fontMenu.delegate = self
+        let fontItem = NSMenuItem(title: "Font", action: nil, keyEquivalent: "")
+        fontItem.submenu = fontMenu
+        menu.addItem(fontItem)
+        menu.addItem(withTitle: "Theme & Display…",
+                     action: #selector(WorkspaceWindowController.showAaPanelAction(_:)),
+                     keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
         let zoomIn = NSMenuItem(title: "Zoom In",
                                 action: #selector(WorkspaceWindowController.zoomInAction(_:)),
@@ -123,10 +155,19 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
         return item
     }
 
-    // MARK: - Open Recent (manual, non-NSDocument app)
+    // MARK: - Dynamic submenus
 
     func menuNeedsUpdate(_ menu: NSMenu) {
-        guard menu === recentMenu else { return }
+        switch menu {
+        case recentMenu: rebuildRecents(menu)
+        case themeMenu: rebuildThemes(menu)
+        case appearanceMenu: rebuildAppearance(menu)
+        case fontMenu: rebuildFonts(menu)
+        default: break
+        }
+    }
+
+    private func rebuildRecents(_ menu: NSMenu) {
         menu.removeAllItems()
         for url in NSDocumentController.shared.recentDocumentURLs {
             let item = NSMenuItem(title: url.lastPathComponent,
@@ -139,5 +180,47 @@ final class MainMenuBuilder: NSObject, NSMenuDelegate {
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Clear Menu",
                      action: #selector(AppDelegate.clearRecentsAction(_:)), keyEquivalent: "")
+    }
+
+    private func rebuildThemes(_ menu: NSMenu) {
+        menu.removeAllItems()
+        guard let controller = activeController else { return }
+        let current = controller.comfortModel.settings.themeID
+        for theme in controller.comfortModel.themeStore.themes() {
+            let item = NSMenuItem(title: theme.name,
+                                  action: #selector(WorkspaceWindowController.setThemeAction(_:)),
+                                  keyEquivalent: "")
+            item.representedObject = theme.id
+            item.state = theme.id == current ? .on : .off
+            menu.addItem(item)
+        }
+    }
+
+    private func rebuildAppearance(_ menu: NSMenu) {
+        menu.removeAllItems()
+        let current = activeController?.comfortModel.settings.appearanceOverride
+        for (title, value) in [("Light", "light"), ("Follow System", nil), ("Dark", "dark")]
+            as [(String, String?)] {
+            let item = NSMenuItem(title: title,
+                                  action: #selector(WorkspaceWindowController.setAppearanceAction(_:)),
+                                  keyEquivalent: "")
+            item.representedObject = value
+            item.state = current == value ? .on : .off
+            menu.addItem(item)
+        }
+    }
+
+    private func rebuildFonts(_ menu: NSMenu) {
+        menu.removeAllItems()
+        let current = activeController?.comfortModel.settings.fontPack
+        for (title, pack) in [("Theme Default", FontPack.themeDefault),
+                              ("Serif", .serif), ("Mono", .mono)] {
+            let item = NSMenuItem(title: title,
+                                  action: #selector(WorkspaceWindowController.setFontPackAction(_:)),
+                                  keyEquivalent: "")
+            item.representedObject = pack.rawValue
+            item.state = current == pack ? .on : .off
+            menu.addItem(item)
+        }
     }
 }

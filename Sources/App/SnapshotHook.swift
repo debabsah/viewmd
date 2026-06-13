@@ -32,6 +32,9 @@ enum SnapshotHook {
             // panel's popover anchors to a sidebar row)
             controller.showAaPanelAction(nil)
         }
+        if env["VMD_SHOT_SETTINGS"] == "1" {
+            (NSApp.delegate as? AppDelegate)?.showSettingsAction(nil)
+        }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             capture(to: path)

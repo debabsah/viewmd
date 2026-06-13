@@ -187,6 +187,37 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
         }
     }
 
+    @objc func setThemeAction(_ sender: NSMenuItem) {
+        guard let id = sender.representedObject as? String else { return }
+        comfortModel.settings.themeID = id
+    }
+
+    @objc func setAppearanceAction(_ sender: NSMenuItem) {
+        comfortModel.settings.appearanceOverride = sender.representedObject as? String
+    }
+
+    @objc func setFontPackAction(_ sender: NSMenuItem) {
+        guard let raw = sender.representedObject as? String,
+              let pack = FontPack(rawValue: raw) else { return }
+        comfortModel.settings.fontPack = pack
+    }
+
+    @objc func saveAsAction(_ sender: Any?) {
+        guard let doc = workspace.activeTab else { return }
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = doc.displayName
+        if panel.runModal() == .OK, let url = panel.url {
+            do { try doc.saveAs(url) } catch {
+                NSAlert(error: error).runModal()
+            }
+        }
+    }
+
+    @objc func revealActiveInFinderAction(_ sender: Any?) {
+        guard let url = workspace.activeTab?.url else { return }
+        revealInFinder(url)
+    }
+
     func render(_ doc: OpenDocument, scroll: RenderBridge.Scroll?) {
         let s = comfortModel.settings
         let systemDark = NSApp.effectiveAppearance
