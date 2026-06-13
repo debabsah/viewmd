@@ -153,7 +153,7 @@ final class WorkspaceWindowController: NSWindowController {
             themeCSS: comfortModel.themeStore.theme(id: s.themeID)?.css
                 ?? RenderBridge.bundledThemeCSS("refined"),
             comfort: RenderBridge.Comfort(
-                fontFamily: s.fontFamily,
+                fontFamily: s.effectiveFontFamily,
                 fontSize: s.fontSize,
                 lineWidth: s.lineWidth,
                 lineSpacing: s.lineSpacing),
