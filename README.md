@@ -7,15 +7,15 @@ Reading a rendered Markdown file should not require launching an IDE. viewmd is 
 ## Features
 
 - Native macOS app: instant launch, small footprint, follows system light/dark mode
-- GitHub-flavored Markdown: tables, task lists, strikethrough, syntax-highlighted code
-- Mermaid diagrams and KaTeX math rendered inline, fully offline
-- YAML frontmatter shown as a tidy collapsible card
-- Live reload: files re-render as they change on disk, scroll position preserved
+- Notion-style shell: tabs in the titlebar, a collapsible and resizable file tree, edge-hover peek
+- Whole-shell theming: eight bundled themes (Refined, Familiar, Paper, Dracula, Nord, Solarized, Catppuccin, One Dark) restyle the entire app, not just the document, plus your own CSS
+- Font packs (Theme default, Serif, Mono) and a custom font picker, independent of themes
+- The Aa panel: theme grid, appearance, fonts, size, width, spacing, code block style in one place
+- GitHub-flavored Markdown with Mermaid diagrams and KaTeX math, fully offline
+- Live reload: files re-render as they change on disk, scroll position preserved, with a live indicator
 - Never clobbers your edits: external changes show a banner when you have unsaved work
-- Workspace mode: open a folder, browse its Markdown tree, switch files in tabs
 - Toggle to source with Cmd+E, save with Cmd+S, full undo
-- Reading comfort popover: theme, font, size, line width, spacing, code block style
-- Eight bundled themes (Refined, Familiar, Paper, Dracula, Nord, Solarized, Catppuccin, One Dark) plus your own CSS
+- Welcome screen with recents, filter the tree with Cmd+P, find with Cmd+F
 - CLI: `viewmd notes.md`, `viewmd docs/`, or bare `viewmd` for the current folder
 
 ## Build
