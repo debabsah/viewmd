@@ -18,6 +18,14 @@ final class ComfortModel: ObservableObject {
         self.themeStore = themeStore
         self.defaults = defaults
         self.settings = ComfortSettings.load(from: defaults)
+        // Dev hook for the screenshot suite: VMD_THEME / VMD_APPEARANCE force
+        // the theme without touching persisted settings (direct-exec only).
+        if let forced = ProcessInfo.processInfo.environment["VMD_THEME"] {
+            settings.themeID = forced
+        }
+        if let forcedAppearance = ProcessInfo.processInfo.environment["VMD_APPEARANCE"] {
+            settings.appearanceOverride = forcedAppearance
+        }
         cancellable = $settings
             .dropFirst()
             .debounce(for: .milliseconds(150), scheduler: DispatchQueue.main)

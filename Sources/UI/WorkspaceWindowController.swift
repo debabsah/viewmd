@@ -20,7 +20,6 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
             backing: .buffered, defer: false)
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
-        window.styleMask.insert(.fullSizeContentView)
         window.center()
         window.setFrameAutosaveName("viewmd.workspace")
         self.init(window: window)

@@ -25,6 +25,11 @@ enum SnapshotHook {
         if let openPath = env["VMD_SHOT_OPEN"],
            let controller = (NSApp.delegate as? AppDelegate)?.mainController() {
             controller.open(url: URL(fileURLWithPath: openPath))
+            // opening a file after the folder keeps the sidebar visible, so a
+            // themed capture shows sidebar + document together
+            if let filePath = env["VMD_SHOT_OPENFILE"] {
+                controller.open(url: URL(fileURLWithPath: filePath))
+            }
         }
         if env["VMD_SHOT_AA"] == "1",
            let controller = (NSApp.delegate as? AppDelegate)?.controllers.first {
