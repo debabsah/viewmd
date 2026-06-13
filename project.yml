@@ -21,6 +21,8 @@ targets:
       - path: bin
         buildPhase: resources
         type: folder
+      - path: Resources/AppIcon.icns
+        buildPhase: resources
     info:
       path: Generated/Info.plist
       properties:
@@ -29,6 +31,7 @@ targets:
         NSPrincipalClass: NSApplication
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: ""
+        CFBundleIconFile: AppIcon
         CFBundleDocumentTypes:
           - CFBundleTypeName: Markdown Document
             CFBundleTypeRole: Editor

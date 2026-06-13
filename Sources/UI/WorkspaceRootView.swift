@@ -30,7 +30,7 @@ struct WorkspaceRootView: View {
                             ActiveDocumentView(document: tab, bridge: bridge)
                                 .id(tab.id)
                         } else {
-                            EmptyDropHint()
+                            WelcomeView(controller: controller, openURL: openURL)
                         }
                     }
                     .frame(minWidth: 400, maxWidth: .infinity)
@@ -72,22 +72,6 @@ struct WorkspaceRootView: View {
             urls.forEach(openURL)
             return true
         }
-    }
-}
-
-struct EmptyDropHint: View {
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "doc.richtext")
-                .font(.system(size: 42))
-                .foregroundStyle(.tertiary)
-            Text("Open a Markdown file or folder")
-                .foregroundStyle(.secondary)
-            Text("⌘O file · ⌘⇧O folder · or drop one here")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
