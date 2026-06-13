@@ -67,7 +67,7 @@ struct AaPanelView: View {
                 Text("Auto").tag("auto")
                 Text("☾ Dark").tag("dark")
             }
-            .pickerStyle(.segmented).labelsHidden()
+            .pickerStyle(.segmented).labelsHidden().tint(palette.accent.color)
 
             sectionLabel("Font")
             Picker("", selection: $model.settings.fontPack) {
@@ -75,7 +75,7 @@ struct AaPanelView: View {
                 Text("Serif").tag(FontPack.serif)
                 Text("Mono").tag(FontPack.mono)
             }
-            .pickerStyle(.segmented).labelsHidden()
+            .pickerStyle(.segmented).labelsHidden().tint(palette.accent.color)
             Picker("Custom family", selection: customFamilyBinding) {
                 Text("—").tag("—")
                 ForEach(NSFontManager.shared.availableFontFamilies, id: \.self) {
@@ -96,7 +96,7 @@ struct AaPanelView: View {
                 Text("Light").tag("light")
                 Text("Dark").tag("dark")
             }
-            .pickerStyle(.segmented).labelsHidden()
+            .pickerStyle(.segmented).labelsHidden().tint(palette.accent.color)
         }
         .padding(14)
         .frame(width: 312)
@@ -142,6 +142,7 @@ struct AaPanelView: View {
                 .foregroundStyle(palette.softText.color)
                 .frame(width: 52, alignment: .leading)
             Slider(value: value, in: range, step: step)
+                .tint(palette.accent.color)
         }
     }
 }
