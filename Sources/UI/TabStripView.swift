@@ -41,6 +41,13 @@ struct TabStripView: View {
                     closeOthers: { workspace.closeTabs(except: tab.id) },
                     reveal: { revealInFinder(tab.url) })
             }
+            // deselected-with-tabs = the new-tab/home state: show a placeholder
+            // chip so the + visibly opens a tab; it becomes the file's tab on open
+            if workspace.activeTabID == nil && !workspace.tabs.isEmpty {
+                NewTabItem(palette: palette) {
+                    workspace.activeTabID = workspace.tabs.last?.id
+                }
+            }
             Button {
                 // new tab: deselect to show the home screen (open a file from
                 // there, or with ⌘O). Reuses the no-active-tab welcome state.
@@ -144,6 +151,38 @@ private struct TabItem: View {
             Button("Close Others", action: closeOthers)
             Button("Reveal in Finder", action: reveal)
         }
+        .frame(maxHeight: .infinity, alignment: .bottom)
+    }
+}
+
+/// The ephemeral "new tab" chip shown while the home screen is up (no document
+/// active but tabs exist). Looks like the active tab — merges into the page —
+/// and is replaced by the real tab the moment a document is opened.
+private struct NewTabItem: View {
+    let palette: ShellPalette
+    let close: () -> Void
+
+    var body: some View {
+        HStack(spacing: 7) {
+            Text("New Tab")
+                .font(.system(size: 12.5, weight: .semibold))
+                .foregroundStyle(palette.text.color)
+                .lineLimit(1)
+            Button(action: close) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(palette.mutedText.color)
+            }
+            .buttonStyle(.plain)
+            .opacity(0.8)
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 30, alignment: .center)
+        .background(
+            UnevenRoundedRectangle(topLeadingRadius: 10, topTrailingRadius: 10)
+                .fill(palette.background.color))
+        .contentShape(Rectangle())
+        .onTapGesture { }   // consume clicks so the chip never drags the window
         .frame(maxHeight: .infinity, alignment: .bottom)
     }
 }
