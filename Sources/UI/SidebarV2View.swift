@@ -112,21 +112,9 @@ struct SidebarV2View: View {
                     pulsing: workspace.activeTab?.isWatching == true)
                 .help(dotHelp)
             Spacer()
-            if !isPeek {
-                Button {
-                    withAnimation(.easeOut(duration: 0.26)) { ui.sidebarVisible = false }
-                } label: {
-                    Image(systemName: "chevron.left.2")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(palette.mutedText.color)
-                        .frame(width: 26, height: 26)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .help("Collapse Sidebar (⌘B)")
-            }
+            // sidebar collapse now lives on the persistent toggle in the title bar
         }
-        .padding(.init(top: 6, leading: 14, bottom: 6, trailing: 10))
+        .padding(.init(top: 6, leading: 14, bottom: 6, trailing: 14))
     }
 
     private var dotColor: Color {

@@ -14,19 +14,22 @@ struct TabStripView: View {
     var body: some View {
         HStack(spacing: 2) {
             Spacer().frame(width: 78)   // traffic-light zone (drag handle)
-            if !ui.sidebarVisible {
+            if workspace.folderURL != nil {
+                // one persistent sidebar toggle that lives here in every state,
+                // Notion-style, with the macOS sidebar glyph (active when shown)
                 Button {
-                    withAnimation(.easeOut(duration: 0.26)) { ui.sidebarVisible = true }
+                    withAnimation(.easeOut(duration: 0.26)) { ui.sidebarVisible.toggle() }
                 } label: {
-                    Image(systemName: "chevron.right.2")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(palette.softText.color)
+                    Image(systemName: "sidebar.left")
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundStyle((ui.sidebarVisible ? palette.softText : palette.mutedText).color)
                         .frame(width: 26, height: 26)
+                        .background(RoundedRectangle(cornerRadius: 6)
+                            .fill(ui.sidebarVisible ? palette.wash.color : .clear))
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .help("Show Sidebar (⌘B)")
-                .transition(.move(edge: .leading).combined(with: .opacity))
+                .help(ui.sidebarVisible ? "Hide Sidebar (⌘B)" : "Show Sidebar (⌘B)")
             }
             Spacer().frame(width: 6)    // tiny gap before the tabs (drag handle)
             ForEach(workspace.tabs) { tab in

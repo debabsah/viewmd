@@ -42,6 +42,10 @@ enum SnapshotHook {
             // reveal the sidebar and switch it to the document outline pane
             controller.showOutlineAction(nil)
         }
+        if env["VMD_SHOT_COLLAPSE"] == "1",
+           let controller = (NSApp.delegate as? AppDelegate)?.controllers.first {
+            controller.ui.sidebarVisible = false
+        }
         if env["VMD_SHOT_SETTINGS"] == "1" {
             (NSApp.delegate as? AppDelegate)?.showSettingsAction(nil)
         }
