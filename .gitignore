@@ -6,3 +6,8 @@ web/dist/
 viewmd.xcodeproj/
 Generated/
 .screenshots/
+
+# Internal-only docs (kept locally, never published)
+docs/strategy/
+docs/superpowers/
+docs/RELEASE.md
