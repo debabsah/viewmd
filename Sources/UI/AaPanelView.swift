@@ -73,20 +73,13 @@ struct AaPanelView: View {
             }
 
             sectionLabel("Appearance")
-            Picker("", selection: appearanceBinding) {
-                Text("☀︎ Light").tag("light")
-                Text("Auto").tag("auto")
-                Text("☾ Dark").tag("dark")
-            }
-            .pickerStyle(.segmented).labelsHidden().tint(palette.accent.color)
+            segmented([("☀︎ Light", "light"), ("Auto", "auto"), ("☾ Dark", "dark")],
+                      selection: appearanceBinding)
 
             sectionLabel("Font")
-            Picker("", selection: $model.settings.fontPack) {
-                Text("Theme default").tag(FontPack.themeDefault)
-                Text("Serif").tag(FontPack.serif)
-                Text("Mono").tag(FontPack.mono)
-            }
-            .pickerStyle(.segmented).labelsHidden().tint(palette.accent.color)
+            segmented([("Theme default", FontPack.themeDefault),
+                       ("Serif", .serif), ("Mono", .mono)],
+                      selection: $model.settings.fontPack)
             Picker("Custom family", selection: customFamilyBinding) {
                 Text("—").tag("—")
                 ForEach(NSFontManager.shared.availableFontFamilies, id: \.self) {
@@ -102,12 +95,8 @@ struct AaPanelView: View {
             slider("Spacing", $model.settings.lineSpacing, in: 1.2...2.2, step: 0.05)
 
             sectionLabel("Code blocks")
-            Picker("", selection: $model.settings.codeBlocks) {
-                Text("Auto").tag("auto")
-                Text("Light").tag("light")
-                Text("Dark").tag("dark")
-            }
-            .pickerStyle(.segmented).labelsHidden().tint(palette.accent.color)
+            segmented([("Auto", "auto"), ("Light", "light"), ("Dark", "dark")],
+                      selection: $model.settings.codeBlocks)
         }
         .padding(14)
         .frame(width: 312)
@@ -138,11 +127,38 @@ struct AaPanelView: View {
         }
         .padding(.horizontal, 10).padding(.vertical, 7)
         .background(RoundedRectangle(cornerRadius: 9)
-            .fill(selected ? palette.tint.color : palette.sideBackground.color))
+            .fill(selected ? palette.tint.color : palette.wash.color))
         .overlay(RoundedRectangle(cornerRadius: 9)
-            .strokeBorder(selected ? palette.accent.color : .clear, lineWidth: 1.5))
+            .strokeBorder(selected ? palette.accent.color : palette.border.color,
+                          lineWidth: selected ? 1.5 : 1))
         .contentShape(Rectangle())
         .onTapGesture { model.settings.themeID = theme.id }
+    }
+
+    /// A palette-driven segmented control. Native NSSegmentedControl follows the
+    /// OS appearance, not the theme, so its chrome washes out on a light theme.
+    /// This one uses the same wash/border/tint surfaces as the theme cards, so
+    /// it stays legible under every theme.
+    private func segmented<T: Hashable>(_ options: [(String, T)],
+                                        selection: Binding<T>) -> some View {
+        HStack(spacing: 2) {
+            ForEach(options, id: \.1) { option in
+                let isSelected = selection.wrappedValue == option.1
+                Text(option.0)
+                    .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+                    .foregroundStyle((isSelected ? palette.accentText : palette.softText).color)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 5)
+                    .background(RoundedRectangle(cornerRadius: 6)
+                        .fill(isSelected ? palette.tint.color : Color.clear))
+                    .contentShape(Rectangle())
+                    .onTapGesture { selection.wrappedValue = option.1 }
+            }
+        }
+        .padding(2)
+        .background(RoundedRectangle(cornerRadius: 8).fill(palette.wash.color))
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(palette.border.color, lineWidth: 1))
     }
 
     private func slider(_ label: String, _ value: Binding<Double>,

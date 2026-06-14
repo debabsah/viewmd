@@ -42,6 +42,10 @@ struct RGBA: Equatable {
     func withAlpha(_ alpha: Double) -> RGBA {
         RGBA(r: r, g: g, b: b, a: alpha)
     }
+
+    /// Rec. 709 relative luminance, 0 (black) to 1 (white). Used to guarantee
+    /// that derived surface tones keep enough contrast across any theme.
+    var luminance: Double { 0.2126 * r + 0.7152 * g + 0.0722 * b }
 }
 
 /// Native shell colors derived from a theme's CSS variables, so the app
@@ -58,6 +62,22 @@ struct ShellPalette: Equatable {
     var accent: RGBA
     var accentText: RGBA
     var tint: RGBA
+
+    /// A hairline tone guaranteed to read against `background`, even on a light
+    /// theme where `background` and `sideBackground` are nearly equal. Derived
+    /// from background-to-text, so any theme readable enough to use also gets a
+    /// visible border. See `borderTone`.
+    var border: RGBA { Self.borderTone(bg: background, text: text) }
+
+    /// Derive a visible hairline against `bg`. Normally mixed toward `text` so
+    /// it stays on theme; if a theme's text is too close to its background, mix
+    /// toward the opposite luminance pole instead, so the step is always met.
+    static func borderTone(bg: RGBA, text: RGBA) -> RGBA {
+        let candidate = bg.mixed(with: text, amount: 0.15)
+        if abs(candidate.luminance - bg.luminance) >= 0.05 { return candidate }
+        let pole: RGBA = bg.luminance > 0.5 ? RGBA(r: 0, g: 0, b: 0) : RGBA(r: 1, g: 1, b: 1)
+        return bg.mixed(with: pole, amount: 0.14)
+    }
 
     static let refinedLight = ShellPalette(
         background: RGBA(hex: "#ffffff")!,

@@ -97,4 +97,29 @@ final class ShellPaletteTests: XCTestCase {
         let dark = ShellPalette.parse(css: "not css at all", appearance: "dark")
         XCTAssertEqual(dark, ShellPalette.refinedDark)
     }
+
+    // The Aa panel (and any future panel) draws hairlines in `border`. It must
+    // stay visible against the panel background for EVERY theme, including light
+    // themes where background and sideBackground are nearly equal. This is the
+    // contrast guarantee that replaces the white-on-white surface bug.
+    func testBorderStaysVisibleForEveryBundledTheme() {
+        for theme in ["refined", "familiar", "paper", "dracula", "nord",
+                      "solarized", "catppuccin", "one-dark"] {
+            for appearance in ["light", "dark"] {
+                let p = ShellPalette.parse(css: bundledCSS(theme), appearance: appearance)
+                let delta = abs(p.border.luminance - p.background.luminance)
+                XCTAssertGreaterThanOrEqual(delta, 0.045,
+                    "\(theme)/\(appearance): border too faint against background (\(delta))")
+            }
+        }
+    }
+
+    func testBorderClampsForALowContrastCustomTheme() {
+        // a pathological custom theme: near-white text on a white background.
+        // it is barely readable, but the border must still be guaranteed visible.
+        let css = #"/* viewmd-theme: Bad; appearances: light */"# + "\n" +
+            #":root[data-appearance="light"] { --vmd-bg: #ffffff; --vmd-heading: #f4f4f4; }"#
+        let p = ShellPalette.parse(css: css, appearance: "light")
+        XCTAssertGreaterThanOrEqual(abs(p.border.luminance - p.background.luminance), 0.1)
+    }
 }
