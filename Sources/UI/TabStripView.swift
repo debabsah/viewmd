@@ -13,7 +13,7 @@ struct TabStripView: View {
 
     var body: some View {
         HStack(spacing: 2) {
-            Spacer().frame(width: 78)   // traffic-light zone
+            Spacer().frame(width: 78)   // traffic-light zone (drag handle)
             if !ui.sidebarVisible {
                 Button {
                     withAnimation(.easeOut(duration: 0.26)) { ui.sidebarVisible = true }
@@ -28,6 +28,7 @@ struct TabStripView: View {
                 .help("Show Sidebar (⌘B)")
                 .transition(.move(edge: .leading).combined(with: .opacity))
             }
+            Spacer().frame(width: 6)    // tiny gap before the tabs (drag handle)
             ForEach(workspace.tabs) { tab in
                 TabItem(
                     title: tab.displayName,
@@ -47,10 +48,55 @@ struct TabStripView: View {
             }
             .buttonStyle(.plain)
             .help("Open File (⌘O)")
-            Spacer(minLength: 0)
+            Spacer(minLength: 10)       // right drag zone, after the + (drag handle)
         }
         .frame(height: 38)
-        .background(palette.sideBackground.color)
+        // The empty gaps above (traffic-light zone, before-tabs, after-+) fall
+        // through to this drag layer; tabs/buttons sit on top and keep their
+        // clicks. So the strip gets native window drag + double-click-to-zoom,
+        // Notion-style, while still wearing the theme's side tone.
+        .background(WindowDragArea(color: palette.sideBackground.nsColor))
+    }
+}
+
+/// The native equivalent of Electron's `-webkit-app-region: drag`: a view the
+/// window treats as its title bar. Empty areas of the strip get drag-to-move
+/// and double-click-to-zoom for free; interactive controls on top opt out by
+/// consuming their own clicks. Paints the strip's theme tone so themes are
+/// unaffected.
+private struct WindowDragArea: NSViewRepresentable {
+    let color: NSColor
+
+    func makeNSView(context: Context) -> NSView {
+        let view = TitlebarDragView()
+        view.wantsLayer = true
+        view.layer?.backgroundColor = color.cgColor
+        return view
+    }
+
+    func updateNSView(_ view: NSView, context: Context) {
+        view.layer?.backgroundColor = color.cgColor
+    }
+}
+
+private final class TitlebarDragView: NSView {
+    // Marks this region as titlebar: the OS handles drag and double-click-to-zoom.
+    override var mouseDownCanMoveWindow: Bool { true }
+
+    // Fallback for when the hosting view delivers the click here instead of
+    // letting the window treat it as a titlebar drag: replicate the native
+    // behavior, honoring the system "double-click a title bar to…" setting.
+    override func mouseDown(with event: NSEvent) {
+        guard let window else { return }
+        if event.clickCount >= 2 {
+            switch UserDefaults.standard.string(forKey: "AppleActionOnDoubleClick") {
+            case "Minimize": window.miniaturize(nil)
+            case "None": break
+            default: window.performZoom(nil)   // "Maximize" / "Fill" / unset
+            }
+        } else {
+            window.performDrag(with: event)
+        }
     }
 }
 
