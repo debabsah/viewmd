@@ -6,7 +6,6 @@ struct WorkspaceRootView: View {
     @ObservedObject var ui: WindowUIState
     let bridge: RenderBridge
     let openURL: (URL) -> Void
-    let openFilePanel: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -14,7 +13,6 @@ struct WorkspaceRootView: View {
                 workspace: workspace,
                 ui: ui,
                 palette: controller.palette,
-                openFileAction: openFilePanel,
                 revealInFinder: controller.revealInFinder)
             ZStack(alignment: .topLeading) {
                 HStack(spacing: 0) {

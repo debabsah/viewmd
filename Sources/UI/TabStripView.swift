@@ -8,7 +8,6 @@ struct TabStripView: View {
     @ObservedObject var workspace: Workspace
     @ObservedObject var ui: WindowUIState
     let palette: ShellPalette
-    let openFileAction: () -> Void
     let revealInFinder: (URL) -> Void
 
     var body: some View {
@@ -42,7 +41,11 @@ struct TabStripView: View {
                     closeOthers: { workspace.closeTabs(except: tab.id) },
                     reveal: { revealInFinder(tab.url) })
             }
-            Button(action: openFileAction) {
+            Button {
+                // new tab: deselect to show the home screen (open a file from
+                // there, or with ⌘O). Reuses the no-active-tab welcome state.
+                workspace.activeTabID = nil
+            } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(palette.mutedText.color)
@@ -50,7 +53,7 @@ struct TabStripView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .help("Open File (⌘O)")
+            .help("New Tab")
             Spacer(minLength: 10)       // right drag zone, after the + (drag handle)
         }
         .frame(height: 32)

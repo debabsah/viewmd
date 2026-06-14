@@ -46,6 +46,10 @@ enum SnapshotHook {
            let controller = (NSApp.delegate as? AppDelegate)?.controllers.first {
             controller.ui.sidebarVisible = false
         }
+        if env["VMD_SHOT_HOME"] == "1",
+           let controller = (NSApp.delegate as? AppDelegate)?.controllers.first {
+            controller.workspace.activeTabID = nil   // the new-tab home state
+        }
         if env["VMD_SHOT_SETTINGS"] == "1" {
             (NSApp.delegate as? AppDelegate)?.showSettingsAction(nil)
         }
