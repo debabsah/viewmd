@@ -1,6 +1,7 @@
 import mermaid from 'mermaid'
 import { createPipeline } from './pipeline.js'
 import { sanitize } from './sanitize.js'
+import { localImageURL } from './image-src.js'
 import { computeAnchor, computeScrollTop, keyedHeadings, scrollTopForKey } from './scroll-anchor.js'
 
 const pipeline = createPipeline()
@@ -13,6 +14,13 @@ const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
 
 function post(message) {
   window.webkit?.messageHandlers?.viewmd?.postMessage(message)
+}
+
+function localizeImages() {
+  for (const img of docEl().querySelectorAll('img')) {
+    const url = localImageURL(img.getAttribute('src') || '')
+    if (url) img.setAttribute('src', url)
+  }
 }
 
 function collectHeadings() {
@@ -74,6 +82,7 @@ window.viewmd = {
     applyAppearance(payload)
     const { html } = pipeline.render(payload.text ?? '')
     docEl().innerHTML = sanitize(html)   // strip scripts/handlers before display
+    localizeImages()                     // route local image paths to the native handler
     await renderMermaidBlocks()
     if (gen !== renderGen) return   // a newer render superseded this pass
     if (anchor) scroller.scrollTop = computeScrollTop(collectHeadings(), anchor)

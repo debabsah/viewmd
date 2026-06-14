@@ -304,6 +304,7 @@ final class WorkspaceWindowController: NSWindowController, ObservableObject {
         let appearance = s.appearanceOverride ?? (systemDark ? "dark" : "light")
         let themeCSS = comfortModel.themeStore.theme(id: s.themeID)?.css
             ?? RenderBridge.bundledThemeCSS("refined")
+        bridge.setImageBaseDirectory(doc.url.deletingLastPathComponent())
         bridge.render(RenderBridge.Payload(
             text: doc.text,
             appearance: appearance,

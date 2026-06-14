@@ -22,6 +22,7 @@ final class RenderBridge: NSObject {
     }
 
     let webView: WKWebView
+    let imageHandler: LocalImageSchemeHandler
     var onRendered: (() -> Void)?
     var onHeadings: (([Heading]) -> Void)?
     var onOpenExternal: ((URL) -> Void)?
@@ -32,12 +33,20 @@ final class RenderBridge: NSObject {
     private var lastPayload: Payload?
 
     override init() {
+        let handler = LocalImageSchemeHandler()
+        imageHandler = handler
         let config = WKWebViewConfiguration()
+        config.setURLSchemeHandler(handler, forURLScheme: LocalImageSchemeHandler.scheme)
         webView = WKWebView(frame: .zero, configuration: config)
         super.init()
         config.userContentController.add(MessageProxy(self), name: "viewmd")
         webView.navigationDelegate = self
         loadTemplate()
+    }
+
+    /// Where relative image paths in the current document resolve from.
+    func setImageBaseDirectory(_ url: URL?) {
+        imageHandler.baseDirectory = url
     }
 
     static func distURL() -> URL? {
