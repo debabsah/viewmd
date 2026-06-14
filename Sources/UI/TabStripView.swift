@@ -22,10 +22,10 @@ struct TabStripView: View {
                 } label: {
                     Image(systemName: "sidebar.left")
                         .font(.system(size: 13, weight: .regular))
-                        .foregroundStyle((ui.sidebarVisible ? palette.softText : palette.mutedText).color)
+                        .foregroundStyle((ui.sidebarVisible ? palette.accentText : palette.mutedText).color)
                         .frame(width: 26, height: 26)
                         .background(RoundedRectangle(cornerRadius: 6)
-                            .fill(ui.sidebarVisible ? palette.wash.color : .clear))
+                            .fill(ui.sidebarVisible ? palette.tint.color : .clear))
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
