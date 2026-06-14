@@ -6,10 +6,12 @@ AI tools now generate Markdown all day long: plans, specs, reports, READMEs, res
 
 viewmd fixes that. Think of it as Preview for Markdown: open, read, done. It opens in a blink, renders beautifully, browses entire folders, themes the whole app to your taste, and refreshes the instant a file changes on disk. And it stays out of the way: native code, no Electron, fully offline, and light on memory.
 
-![viewmd rendering a document with the file tree, a Mermaid diagram, a table, and inline math](docs/screenshots/hero-light.png)
-
 <p align="center">
-  <img src="docs/screenshots/theme-dark.png" width="49%" alt="The whole app restyled with a dark theme, not just the document">
+  <img src="docs/screenshots/refined-dark-closed.png" width="49%" alt="Reading a document edge to edge in the Refined dark theme">
+  <img src="docs/screenshots/paper-light-closed.png" width="49%" alt="The Paper theme, a warm serif look, with the sidebar hidden">
+</p>
+<p align="center">
+  <img src="docs/screenshots/theme-dark.png" width="49%" alt="The whole app restyled with a dark theme, with the file tree open">
   <img src="docs/screenshots/outline.png" width="49%" alt="The document outline panel for jumping between headings">
 </p>
 
