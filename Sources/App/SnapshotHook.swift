@@ -59,8 +59,13 @@ enum SnapshotHook {
         let window = NSApp.windows.first(where: { $0.isVisible && $0.className.contains("Popover") })
             ?? NSApp.keyWindow
             ?? NSApp.windows.first(where: { $0.isVisible })
-        guard let view = window?.contentView,
-              let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
+        // VMD_SHOT_FRAME=1 captures the window frame view (includes the system
+        // traffic lights) instead of just the content view — for verifying
+        // titlebar alignment.
+        let content = window?.contentView
+        let view = (ProcessInfo.processInfo.environment["VMD_SHOT_FRAME"] == "1"
+            ? content?.superview : content) ?? content
+        guard let view, let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
         view.cacheDisplay(in: view.bounds, to: rep)
         if let data = rep.representation(using: .png, properties: [:]) {
             try? data.write(to: URL(fileURLWithPath: path))

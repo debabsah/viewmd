@@ -126,7 +126,7 @@ struct SidebarV2View: View {
                 .help("Collapse Sidebar (⌘B)")
             }
         }
-        .padding(.init(top: 9, leading: 14, bottom: 5, trailing: 10))
+        .padding(.init(top: 6, leading: 14, bottom: 6, trailing: 10))
     }
 
     private var dotColor: Color {

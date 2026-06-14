@@ -50,7 +50,7 @@ struct TabStripView: View {
             .help("Open File (⌘O)")
             Spacer(minLength: 10)       // right drag zone, after the + (drag handle)
         }
-        .frame(height: 38)
+        .frame(height: 32)
         // The empty gaps above (traffic-light zone, before-tabs, after-+) fall
         // through to this drag layer; tabs/buttons sit on top and keep their
         // clicks. So the strip gets native window drag + double-click-to-zoom,
@@ -125,8 +125,7 @@ private struct TabItem: View {
             .opacity(hovering || isActive ? 0.8 : 0)
         }
         .padding(.horizontal, 14)
-        .padding(.top, 6)
-        .frame(height: 32, alignment: .center)
+        .frame(height: 30, alignment: .center)
         .background(
             UnevenRoundedRectangle(topLeadingRadius: 10, topTrailingRadius: 10)
                 .fill(isActive ? palette.background.color
